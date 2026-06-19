@@ -1,8 +1,6 @@
 import Foundation
 import HomeKit
-#if canImport(AppKit)
-import AppKit
-#endif
+import UIKit
 
 @MainActor
 final class HomeStore: NSObject, ObservableObject {
@@ -27,10 +25,7 @@ final class HomeStore: NSObject, ObservableObject {
 
     func copyDebugSummary() {
         let summary = InventorySummary.from(homes: homes)
-        #if canImport(AppKit)
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(summary.debugText, forType: .string)
-        #endif
+        UIPasteboard.general.string = summary.debugText
     }
 
     private func updateFromManager() {
@@ -40,33 +35,30 @@ final class HomeStore: NSObject, ObservableObject {
         }
 
         homes = manager.homes
-        selectedHomeName = manager.primaryHome?.name ?? manager.homes.first?.name
+        selectedHomeName = manager.homes.first?.name
         updateAuthorizationStatus()
     }
 
     private func updateAuthorizationStatus() {
-        if #available(iOS 13.0, macCatalyst 13.0, *) {
-            let status = HMHomeManager.authorizationStatus()
-            switch status {
-            case []:
-                authorizationLabel = "Home access: not determined"
-                authorizationIcon = "questionmark.circle"
-            case .authorized:
-                authorizationLabel = "Home access: authorized"
-                authorizationIcon = "checkmark.circle.fill"
-            case .restricted:
-                authorizationLabel = "Home access: restricted"
-                authorizationIcon = "lock.circle"
-            case .determined:
-                authorizationLabel = "Home access: determined"
-                authorizationIcon = "checkmark.circle"
-            default:
-                authorizationLabel = "Home access: \(status.rawValue)"
-                authorizationIcon = "questionmark.circle"
-            }
-        } else {
-            authorizationLabel = "Home access: unavailable on this OS"
+        guard let manager else {
+            authorizationLabel = "Home access: not determined"
+            authorizationIcon = "questionmark.circle"
+            return
+        }
+
+        let status = manager.authorizationStatus
+        if status.contains(.authorized) {
+            authorizationLabel = "Home access: authorized"
+            authorizationIcon = "checkmark.circle.fill"
+        } else if status.contains(.restricted) {
+            authorizationLabel = "Home access: restricted"
+            authorizationIcon = "lock.circle"
+        } else if status.contains(.determined) {
+            authorizationLabel = "Home access: not authorized"
             authorizationIcon = "xmark.circle"
+        } else {
+            authorizationLabel = "Home access: not determined"
+            authorizationIcon = "questionmark.circle"
         }
     }
 }

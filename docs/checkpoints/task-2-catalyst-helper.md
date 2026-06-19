@@ -2,40 +2,38 @@
 
 ## Summary
 
-A minimal HomeKit helper app skeleton now exists under `App/HomeKitMCPHelper`.
+A minimal HomeKit helper app skeleton exists under `App/HomeKitMCPHelper` and now builds successfully as a Mac Catalyst app when code signing is disabled.
 
-It is designed as a native-feeling Mac menu bar utility using SwiftUI + Mac Catalyst and HomeKit.
+The helper is currently a small native-style Catalyst window, not a true menu bar extra. This is intentional after verification: SwiftUI `MenuBarExtra` is unavailable to this Mac Catalyst target. A future menu bar product shape likely needs either:
+
+1. a small native AppKit menu bar wrapper/launcher that communicates with the Catalyst HomeKit helper, or
+2. a different app architecture if HomeKit access can be preserved while using an AppKit shell.
+
+The HomeKit proof-of-life remains valid: the Catalyst target can import HomeKit and compile `HMHomeManager` usage.
 
 ## Added
 
-- Menu bar entry point with `MenuBarExtra`.
-- Native status UI for:
+- Native-style SwiftUI Catalyst app entry point.
+- Status UI for:
   - HomeKit authorization status.
   - Home count.
   - Selected home.
   - Refresh inventory action.
   - Copy debug summary action.
 - `HMHomeManager` proof-of-life store.
-- `NSHomeKitUsageDescription` in `Info.plist`.
+- `NSHomeKitUsageDescription` generated through XcodeGen.
 - `com.apple.developer.homekit` entitlement file.
-- Unit-test skeleton for inventory debug JSON.
+- Unit test for inventory debug JSON.
 - XcodeGen project spec.
 - Generated `HomeKitMCPHelper.xcodeproj`.
 
 ## Verification performed
 
-### Plist validation
-
-```bash
-plutil -lint \
-  App/HomeKitMCPHelper/HomeKitMCPHelper/Info.plist \
-  App/HomeKitMCPHelper/HomeKitMCPHelper/HomeKitMCPHelper.entitlements
-```
-
-Result:
+Environment:
 
 ```text
-OK
+macOS 26.2
+Xcode 26.5 / build 17F42
 ```
 
 ### Xcode project generation
@@ -48,10 +46,60 @@ xcodegen generate
 Result:
 
 ```text
-Created project at App/HomeKitMCPHelper/HomeKitMCPHelper.xcodeproj
+Created project at /Users/grumpyorange/homekit-mcp-research/App/HomeKitMCPHelper/HomeKitMCPHelper.xcodeproj
 ```
 
-### Build attempt
+### Plist validation
+
+```bash
+plutil -p App/HomeKitMCPHelper/HomeKitMCPHelper/Info.plist
+```
+
+Confirmed generated plist contains:
+
+```text
+NSHomeKitUsageDescription = "This app needs access to Apple Home to inspect rooms and accessories for local metadata synchronization."
+```
+
+### Unsigned Mac Catalyst build
+
+```bash
+cd App/HomeKitMCPHelper
+xcodebuild \
+  -project HomeKitMCPHelper.xcodeproj \
+  -scheme HomeKitMCPHelper \
+  -destination 'platform=macOS,variant=Mac Catalyst' \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
+
+Result:
+
+```text
+** BUILD SUCCEEDED **
+```
+
+### Unsigned Mac Catalyst tests
+
+```bash
+cd App/HomeKitMCPHelper
+xcodebuild \
+  -project HomeKitMCPHelper.xcodeproj \
+  -scheme HomeKitMCPHelper \
+  -destination 'platform=macOS,variant=Mac Catalyst' \
+  CODE_SIGNING_ALLOWED=NO \
+  test
+```
+
+Result:
+
+```text
+Test Suite 'All tests' passed
+Executed 1 test, with 0 failures
+** TEST SUCCEEDED **
+```
+
+### Signed build attempt
 
 ```bash
 cd App/HomeKitMCPHelper
@@ -65,53 +113,40 @@ xcodebuild \
 Result:
 
 ```text
-xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instance
+Signing for "HomeKitMCPHelper" requires a development team. Select a development team in the Signing & Capabilities editor.
 ```
 
-## Environment blocker
+## Issues discovered and fixed
 
-This Mac currently has only Xcode Command Line Tools selected:
+### Xcode setup
 
-```text
-/Library/Developer/CommandLineTools
-```
+Initial environment only had Command Line Tools. Full Xcode was installed manually, license accepted, and first-launch packages installed.
 
-The Mac has the macOS SDK, but not the iPhoneOS/iPhoneSimulator SDKs required for Mac Catalyst builds.
+### Catalyst API corrections
 
-Attempted install routes:
+Fixed compile failures caused by APIs unavailable in Mac Catalyst:
 
-- Installed `mas`, but App Store Xcode install requires privileged interactive operation.
-- Installed `xcodes`, but `xcodes install 26.2 --directory /Applications --select --no-superuser` requires Apple ID credentials:
+- Replaced `NSPasteboard` with `UIPasteboard`.
+- Removed direct `NSApplication.shared.terminate` usage.
+- Replaced static `HMHomeManager.authorizationStatus()` usage with instance `manager.authorizationStatus`.
+- Avoided deprecated `primaryHome` usage.
 
-```text
-Apple ID: Missing username or a password. Please try again.
-```
+### XcodeGen plist generation
 
-No Apple ID credentials were handled by the automation agent.
+XcodeGen overwrote the hand-written `Info.plist`, which removed `NSHomeKitUsageDescription` and caused test launch crashes. The usage description is now declared in `project.yml` so generation is reproducible.
 
-## Next manual step
+### Deployment target mismatch
 
-Install full Xcode, then select it:
+Tests initially failed because the generated test target effectively required macOS 26.5 while the Mac runs macOS 26.2. The project now pins `MACOSX_DEPLOYMENT_TARGET` to `14.0` for app and test targets.
 
-```bash
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-xcodebuild -version
-xcrun --sdk iphonesimulator --show-sdk-path
-```
+## Remaining blocker for real Home permission testing
 
-After that, rerun:
+A signed build requires selecting/configuring a development team for the target.
 
-```bash
-cd App/HomeKitMCPHelper
-xcodebuild \
-  -project HomeKitMCPHelper.xcodeproj \
-  -scheme HomeKitMCPHelper \
-  -destination 'platform=macOS,variant=Mac Catalyst' \
-  build
-```
+Until signing is configured, the project can compile and run tests unsigned, but cannot complete the real HomeKit permission prompt/authorization proof.
 
 ## Checkpoint decision
 
-This task is ready for review as a **source/project proof-of-life with an environment blocker**.
+This task is ready for review as a **compiled Mac Catalyst HomeKit proof-of-life**.
 
-The implementation should not proceed to Home permission testing until full Xcode is installed and the Catalyst build succeeds.
+Next task should proceed only after review approval. The next likely work item is signing/team configuration plus launching the app to request Home access, then moving to the read-only Home inventory inspector.

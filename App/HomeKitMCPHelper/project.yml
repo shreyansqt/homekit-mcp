@@ -12,6 +12,10 @@ targets:
       - HomeKitMCPHelper
     info:
       path: HomeKitMCPHelper/Info.plist
+      properties:
+        CFBundleDisplayName: HomeKit MCP Helper
+        LSApplicationCategoryType: public.app-category.utilities
+        NSHomeKitUsageDescription: This app needs access to Apple Home to inspect rooms and accessories for local metadata synchronization.
     entitlements:
       path: HomeKitMCPHelper/HomeKitMCPHelper.entitlements
     settings:
@@ -19,6 +23,7 @@ targets:
         SUPPORTS_MACCATALYST: YES
         DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER: NO
         PRODUCT_BUNDLE_IDENTIFIER: local.homekitmcp.helper
+        MACOSX_DEPLOYMENT_TARGET: '14.0'
         CODE_SIGN_STYLE: Automatic
         ENABLE_HARDENED_RUNTIME: YES
         INFOPLIST_FILE: HomeKitMCPHelper/Info.plist
@@ -35,3 +40,4 @@ targets:
       base:
         SUPPORTS_MACCATALYST: YES
         PRODUCT_BUNDLE_IDENTIFIER: local.homekitmcp.helper.tests
+        MACOSX_DEPLOYMENT_TARGET: '14.0'

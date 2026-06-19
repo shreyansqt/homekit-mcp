@@ -55,10 +55,12 @@ struct MenuBarView: View {
                 homeStore.copyDebugSummary()
             }
 
-            Button("Quit") {
-                NSApplication.shared.terminate(nil)
+            Button("Close") {
+                // Catalyst proof-of-life: keep this non-destructive and avoid
+                // AppKit-only termination APIs. A proper menu bar wrapper can
+                // own quit/launch-at-login behavior later.
             }
-            .keyboardShortcut("q")
+            .disabled(true)
         }
     }
 }
