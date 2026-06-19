@@ -336,3 +336,28 @@ Prototype acceptance criteria:
 - An MCP client can move one test accessory to a chosen Apple Home room and verify it.
 
 If those pass, the project is viable.
+
+## UI direction
+
+The helper should be a native-feeling Mac menu bar app, not a heavy custom dashboard.
+
+Design constraints:
+
+- Use native Apple UI components wherever possible.
+- Prefer SwiftUI/AppKit/Catalyst-standard controls over custom design systems.
+- Keep the menu bar surface small and familiar.
+- Expose advanced details only when needed.
+- Make HomeKit permission, selected home, last sync status, and pending changes visible.
+- Require explicit approval for batch mutations unless running in a deliberately configured trusted mode.
+
+Suggested menu bar items:
+
+- Permission status: Home access granted/denied.
+- Selected Apple Home.
+- Last inventory sync time.
+- Run dry-run diff.
+- Review pending changes.
+- Apply approved plan.
+- Open logs.
+- Settings.
+- Quit.
