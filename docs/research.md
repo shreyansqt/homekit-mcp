@@ -2,7 +2,7 @@
 
 ## Goal
 
-Determine whether Jarvis can manage Apple Home metadata — rooms, accessory names, grouping, and Home Assistant bridged accessories — without manually clicking through the Home app.
+Determine whether an automation agent can manage Apple Home metadata — rooms, accessory names, grouping, and Home Assistant bridged accessories — without manually clicking through the Home app.
 
 The use case is not day-to-day device control. It is **home administration sync**:
 
@@ -15,12 +15,12 @@ The use case is not day-to-day device control. It is **home administration sync*
 
 This is viable, but not as a simple native macOS CLI.
 
-The official route is a **Mac Catalyst app with the HomeKit entitlement**. That app can request Home access from the user, use the HomeKit framework, and expose a local IPC/API surface that an MCP server can wrap for Jarvis.
+The official route is a **Mac Catalyst app with the HomeKit entitlement**. That app can request Home access from the user, use the HomeKit framework, and expose a local IPC/API surface that an MCP server can wrap for automation clients.
 
 Recommended architecture:
 
 ```text
-Jarvis / Hermes
+Automation client / MCP host
   -> MCP tools
   -> local MCP server
   -> localhost/XPC/App Group bridge

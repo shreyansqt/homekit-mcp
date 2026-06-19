@@ -6,7 +6,7 @@
 
 ## Problem
 
-Home Assistant is the technical source of truth for the home, but Apple Home is the household-facing interface used on iPhone and Mac.
+Home Assistant can act as the automation source of truth, while Apple Home remains the household-facing interface used on iPhone, iPad, and Mac.
 
 Home Assistant's HomeKit Bridge syncs device state/control, but Apple Home metadata often still needs manual maintenance:
 
@@ -16,11 +16,11 @@ Home Assistant's HomeKit Bridge syncs device state/control, but Apple Home metad
 - Scene/action-set mirroring.
 - Detecting missing or stale bridged accessories.
 
-Jarvis should be able to perform these admin tasks once, safely, across both systems.
+An automation agent should be able to perform these admin tasks once, safely, across both systems.
 
 ## Product goal
 
-Build a local Mac helper that gives Jarvis a safe, permissioned way to inspect and modify Apple Home organization while keeping Home Assistant as the source of truth.
+Build a local Mac helper that gives automation clients a safe, permissioned way to inspect and modify Apple Home organization while keeping Home Assistant as the source of truth.
 
 ## Non-goals
 
@@ -29,12 +29,12 @@ Build a local Mac helper that gives Jarvis a safe, permissioned way to inspect a
 - Exposing Apple Home controls to every agent by default.
 - Using private Apple frameworks in the MVP.
 - Building cloud infrastructure.
-- Day-to-day light control; that stays in HA / household assistant territory.
+- Day-to-day light control; this project focuses on administration and metadata sync.
 
 ## Architecture
 
 ```text
-Hermes / Jarvis
+MCP host / automation client
   -> MCP client
   -> local MCP server process
   -> authenticated local IPC
@@ -86,7 +86,7 @@ Recommended MVP: **Option B**, unless HomeKit calls fail outside foreground app 
 
 - Bind local API to `127.0.0.1` only, or use XPC/App Group where possible.
 - Require a local auth token generated on first launch and stored in Keychain.
-- MCP server must be explicitly configured in Hermes/Jarvis only.
+- MCP server access should be explicitly configured for trusted local clients only.
 - Mutating tools should support dry-run mode.
 - Dangerous operations require narrow parameters, never broad free-form commands.
 - Log every mutation with before/after values.
@@ -255,7 +255,7 @@ This should be the preferred mutation path for larger changes.
 
 ### HA-aware orchestration tools
 
-These may live in Jarvis instead of the HomeKit MCP server, but are useful to define.
+These may live in a higher-level orchestration layer instead of the HomeKit MCP server, but are useful to define.
 
 #### `sync_homekit_from_ha_areas`
 
@@ -299,7 +299,7 @@ Given a HA entity/device, find its Apple Home bridged accessory and place it cor
 - UI showing diff before apply.
 - Signed/notarized app.
 - Launch at login.
-- Hermes config installer for MCP registration.
+- Generic MCP client configuration examples.
 
 ## Key risks
 
@@ -332,7 +332,7 @@ Prototype acceptance criteria:
 - User grants Home access once.
 - Helper lists Apple Home rooms/accessories.
 - Helper identifies at least one HA-bridged accessory.
-- Jarvis can call one MCP tool to dry-run an HA-vs-Apple-Home room diff.
-- Jarvis can move one test accessory to a chosen Apple Home room and verify it.
+- An MCP client can call one tool to dry-run a Home Assistant vs Apple Home room diff.
+- An MCP client can move one test accessory to a chosen Apple Home room and verify it.
 
 If those pass, the project is viable.
