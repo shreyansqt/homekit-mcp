@@ -8,3 +8,4 @@ Status: research / viability assessment.
 
 - [`docs/research.md`](docs/research.md) — HomeKit API capability research and limitations.
 - [`docs/product-outline.md`](docs/product-outline.md) — proposed architecture, MVP, MCP tools, and open questions.
+- [`docs/prototype-plan.md`](docs/prototype-plan.md) — gated prototype plan, acceptance tests, permissions, and safety checkpoints.
