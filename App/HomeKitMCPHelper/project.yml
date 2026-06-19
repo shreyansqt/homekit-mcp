@@ -18,6 +18,9 @@ targets:
         NSHomeKitUsageDescription: This app needs access to Apple Home to inspect rooms and accessories for local metadata synchronization.
     entitlements:
       path: HomeKitMCPHelper/HomeKitMCPHelper.entitlements
+      properties:
+        com.apple.developer.homekit: true
+        com.apple.security.network.server: true
     settings:
       base:
         SUPPORTS_MACCATALYST: YES

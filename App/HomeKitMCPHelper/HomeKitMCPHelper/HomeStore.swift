@@ -9,14 +9,18 @@ final class HomeStore: NSObject, ObservableObject {
     @Published private(set) var homes: [HMHome] = []
     @Published private(set) var selectedHomeName: String?
     @Published private(set) var lastError: String?
+    @Published private(set) var serverStatus = "Server: stopped"
+    @Published private(set) var serverURL = "http://127.0.0.1:8765"
 
     private var manager: HMHomeManager?
+    private var server: LocalHomeKitServer?
 
     func start() {
         let manager = HMHomeManager()
         manager.delegate = self
         self.manager = manager
         updateAuthorizationStatus()
+        startServer()
     }
 
     func refresh() {
@@ -24,8 +28,31 @@ final class HomeStore: NSObject, ObservableObject {
     }
 
     func copyDebugSummary() {
-        let summary = InventorySummary.from(homes: homes)
-        UIPasteboard.general.string = summary.debugText
+        UIPasteboard.general.string = inventoryJSON()
+    }
+
+    func inventoryJSON() -> String {
+        AppleHomeInventory.from(
+            homes: homes,
+            authorization: authorizationLabel,
+            generatedAt: Date()
+        ).jsonText
+    }
+
+    private func startServer() {
+        guard server == nil else { return }
+        do {
+            let server = try LocalHomeKitServer(port: 8765) { [weak self] in
+                guard let self else { return AppleHomeInventory.empty.jsonText }
+                return self.inventoryJSON()
+            }
+            try server.start()
+            self.server = server
+            serverStatus = "Server: running on \(serverURL)"
+        } catch {
+            lastError = "Server failed: \(error.localizedDescription)"
+            serverStatus = "Server: failed"
+        }
     }
 
     private func updateFromManager() {
@@ -68,37 +95,5 @@ extension HomeStore: HMHomeManagerDelegate {
         Task { @MainActor in
             self.updateFromManager()
         }
-    }
-}
-
-struct InventorySummary: Codable {
-    struct Home: Codable {
-        let name: String
-        let roomCount: Int
-        let accessoryCount: Int
-    }
-
-    let homes: [Home]
-
-    static func from(homes: [HMHome]) -> InventorySummary {
-        InventorySummary(
-            homes: homes.map { home in
-                Home(
-                    name: home.name,
-                    roomCount: home.rooms.count,
-                    accessoryCount: home.accessories.count
-                )
-            }
-        )
-    }
-
-    var debugText: String {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        guard let data = try? encoder.encode(self),
-              let text = String(data: data, encoding: .utf8) else {
-            return "{}"
-        }
-        return text
     }
 }

@@ -33,6 +33,10 @@ struct MenuBarView: View {
     private var statusRows: some View {
         VStack(alignment: .leading, spacing: 8) {
             Label(homeStore.authorizationLabel, systemImage: homeStore.authorizationIcon)
+            Label(homeStore.serverStatus, systemImage: "network")
+            Label(homeStore.serverURL, systemImage: "link")
+                .font(.caption)
+                .foregroundStyle(.secondary)
             Label("Homes: \(homeStore.homes.count)", systemImage: "house.lodge")
             if let selectedHomeName = homeStore.selectedHomeName {
                 Label("Selected: \(selectedHomeName)", systemImage: "checkmark.circle")

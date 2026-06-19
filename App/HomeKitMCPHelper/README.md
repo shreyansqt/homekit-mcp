@@ -4,7 +4,14 @@ Minimal Mac Catalyst proof-of-life skeleton for a native-feeling helper that req
 
 ## Current status
 
-The app builds and tests successfully as Mac Catalyst with code signing disabled.
+The app builds and tests successfully as Mac Catalyst with code signing disabled. It also starts a localhost-only read-only inventory server at `http://127.0.0.1:8765`.
+
+Endpoints:
+
+- `GET /health`
+- `GET /`
+- `GET /inventory`
+- `POST /mcp` — current simple MCP-style bridge stub, returns inventory JSON.
 
 ```bash
 xcodebuild \
