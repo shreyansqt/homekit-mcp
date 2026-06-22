@@ -6,6 +6,7 @@ final class InventorySummaryTests: XCTestCase {
         let summary = AppleHomeInventory(
             generatedAt: "2026-06-19T00:00:00Z",
             authorization: "Home access: authorized",
+            selectedHomeName: "Example Home",
             homeCount: 1,
             homes: [
                 .init(
@@ -50,5 +51,25 @@ final class InventorySummaryTests: XCTestCase {
 
         XCTAssertTrue(text.hasPrefix("HTTP/1.1 200 OK"))
         XCTAssertTrue(text.contains("\"status\":\"ok\""))
+    }
+
+    func testMCPRequestFiltersHome() throws {
+        let summary = AppleHomeInventory(
+            generatedAt: "2026-06-19T00:00:00Z",
+            authorization: "Home access: authorized",
+            selectedHomeName: "Köpenick Home",
+            homeCount: 2,
+            homes: [
+                .init(id: "home-1", name: "My Home", roomCount: 0, accessoryCount: 0, rooms: [], accessories: []),
+                .init(id: "home-2", name: "Köpenick Home", roomCount: 9, accessoryCount: 24, rooms: [], accessories: [])
+            ]
+        )
+        let request = "POST /mcp HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n{\"tool\":\"homekit_inventory\",\"arguments\":{\"home\":\"Köpenick Home\"}}"
+        let response = LocalHTTPResponse.response(for: request, inventoryJSON: summary.jsonText)
+        let text = try XCTUnwrap(String(data: response, encoding: .utf8))
+
+        XCTAssertTrue(text.contains("\"homeCount\" : 1"))
+        XCTAssertTrue(text.contains("Köpenick Home"))
+        XCTAssertFalse(text.contains("My Home"))
     }
 }

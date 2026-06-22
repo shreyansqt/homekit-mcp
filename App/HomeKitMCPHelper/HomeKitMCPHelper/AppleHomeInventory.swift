@@ -43,20 +43,23 @@ struct AppleHomeInventory: Codable {
 
     let generatedAt: String
     let authorization: String
+    let selectedHomeName: String?
     let homeCount: Int
     let homes: [Home]
 
     static let empty = AppleHomeInventory(
         generatedAt: ISO8601DateFormatter().string(from: Date()),
         authorization: "Home access: unavailable",
+        selectedHomeName: nil,
         homeCount: 0,
         homes: []
     )
 
-    static func from(homes: [HMHome], authorization: String, generatedAt: Date) -> AppleHomeInventory {
+    static func from(homes: [HMHome], selectedHomeName: String?, authorization: String, generatedAt: Date) -> AppleHomeInventory {
         AppleHomeInventory(
             generatedAt: ISO8601DateFormatter().string(from: generatedAt),
             authorization: authorization,
+            selectedHomeName: selectedHomeName,
             homeCount: homes.count,
             homes: homes.map { home in
                 Home(
@@ -106,6 +109,18 @@ struct AppleHomeInventory: Codable {
             return "{}"
         }
         return text
+    }
+
+    func filtered(homeName: String?) -> AppleHomeInventory {
+        guard let homeName, !homeName.isEmpty else { return self }
+        let filteredHomes = homes.filter { $0.name.caseInsensitiveCompare(homeName) == .orderedSame }
+        return AppleHomeInventory(
+            generatedAt: generatedAt,
+            authorization: authorization,
+            selectedHomeName: filteredHomes.first?.name,
+            homeCount: filteredHomes.count,
+            homes: filteredHomes
+        )
     }
 }
 

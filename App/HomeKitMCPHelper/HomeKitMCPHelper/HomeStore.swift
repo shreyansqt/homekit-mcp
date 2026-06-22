@@ -34,6 +34,7 @@ final class HomeStore: NSObject, ObservableObject {
     func inventoryJSON() -> String {
         AppleHomeInventory.from(
             homes: homes,
+            selectedHomeName: selectedHomeName,
             authorization: authorizationLabel,
             generatedAt: Date()
         ).jsonText
@@ -62,7 +63,7 @@ final class HomeStore: NSObject, ObservableObject {
         }
 
         homes = manager.homes
-        selectedHomeName = manager.homes.first?.name
+        selectedHomeName = manager.homes.first(where: { !$0.accessories.isEmpty || !$0.rooms.isEmpty })?.name ?? manager.homes.first?.name
         updateAuthorizationStatus()
     }
 

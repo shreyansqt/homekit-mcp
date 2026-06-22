@@ -57,8 +57,14 @@ enum LocalHTTPResponse {
             return http(status: "200 OK", body: "{\"status\":\"ok\"}\n")
         }
 
-        if firstLine.hasPrefix("GET /inventory ") || firstLine.hasPrefix("POST /mcp ") {
+        if firstLine.hasPrefix("GET /inventory ") {
             return http(status: "200 OK", body: inventoryJSON + "\n")
+        }
+
+        if firstLine.hasPrefix("POST /mcp ") {
+            let homeName = MCPRequest.homeName(from: request)
+            let body = MCPRequest.filteredInventory(inventoryJSON: inventoryJSON, homeName: homeName)
+            return http(status: "200 OK", body: body + "\n")
         }
 
         if firstLine.hasPrefix("GET / ") {
@@ -85,5 +91,32 @@ enum LocalHTTPResponse {
         var data = Data(header.utf8)
         data.append(bodyData)
         return data
+    }
+}
+
+enum MCPRequest {
+    static func homeName(from request: String) -> String? {
+        guard let body = request.components(separatedBy: "\r\n\r\n").last,
+              let data = body.data(using: .utf8),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+
+        if let home = object["home"] as? String { return home }
+        if let arguments = object["arguments"] as? [String: Any],
+           let home = arguments["home"] as? String {
+            return home
+        }
+
+        return nil
+    }
+
+    static func filteredInventory(inventoryJSON: String, homeName: String?) -> String {
+        guard let data = inventoryJSON.data(using: .utf8),
+              let inventory = try? JSONDecoder().decode(AppleHomeInventory.self, from: data) else {
+            return inventoryJSON
+        }
+
+        return inventory.filtered(homeName: homeName).jsonText
     }
 }
