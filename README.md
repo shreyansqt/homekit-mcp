@@ -12,4 +12,6 @@ Status: research / viability assessment.
 
 ## Checkpoints
 
-- [`docs/checkpoints/task-2-catalyst-helper.md`](docs/checkpoints/task-2-catalyst-helper.md) — Mac Catalyst helper proof-of-life checkpoint and current Xcode blocker.
+- [`docs/checkpoints/task-2-catalyst-helper.md`](docs/checkpoints/task-2-catalyst-helper.md) — Mac Catalyst helper proof-of-life checkpoint.
+- [`docs/checkpoints/task-3-local-inventory-server.md`](docs/checkpoints/task-3-local-inventory-server.md) — localhost read-only inventory server checkpoint.
+- [`docs/checkpoints/task-4-read-only-inventory-inspector.md`](docs/checkpoints/task-4-read-only-inventory-inspector.md) — real authorized Apple Home inventory checkpoint.

@@ -22,6 +22,9 @@ struct AppleHomeInventory: Codable {
         let roomName: String?
         let category: String
         let isReachable: Bool
+        let isBridged: Bool
+        let bridgedAccessoryIds: [String]
+        let bridgedAccessoryCount: Int
         let serviceCount: Int
         let services: [Service]
     }
@@ -77,6 +80,9 @@ struct AppleHomeInventory: Codable {
                             roomName: accessory.room?.name,
                             category: accessory.category.localizedDescription,
                             isReachable: accessory.isReachable,
+                            isBridged: accessory.isBridged,
+                            bridgedAccessoryIds: accessory.bridgedAccessories.map { $0.uniqueIdentifier.uuidString },
+                            bridgedAccessoryCount: accessory.bridgedAccessories.count,
                             serviceCount: accessory.services.count,
                             services: accessory.services.map { service in
                                 Service(
