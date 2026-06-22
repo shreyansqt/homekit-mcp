@@ -127,6 +127,7 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					0071911B1F8C822303A0F5C7 = {
+						DevelopmentTeam = KVT6M7Q855;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -292,6 +293,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = NO;
+				DEVELOPMENT_TEAM = KVT6M7Q855;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = HomeKitMCPHelper/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -371,6 +373,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER = NO;
+				DEVELOPMENT_TEAM = KVT6M7Q855;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = HomeKitMCPHelper/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
