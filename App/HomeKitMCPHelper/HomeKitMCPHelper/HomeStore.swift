@@ -14,6 +14,7 @@ final class HomeStore: NSObject, ObservableObject {
 
     private var manager: HMHomeManager?
     private var server: LocalHomeKitServer?
+    private var characteristicValues: [UUID: String] = [:]
 
     func start() {
         let manager = HMHomeManager()
@@ -36,7 +37,8 @@ final class HomeStore: NSObject, ObservableObject {
             homes: homes,
             selectedHomeName: selectedHomeName,
             authorization: authorizationLabel,
-            generatedAt: Date()
+            generatedAt: Date(),
+            characteristicValues: characteristicValues
         ).jsonText
     }
 
@@ -65,6 +67,26 @@ final class HomeStore: NSObject, ObservableObject {
         homes = manager.homes
         selectedHomeName = manager.homes.first(where: { !$0.accessories.isEmpty || !$0.rooms.isEmpty })?.name ?? manager.homes.first?.name
         updateAuthorizationStatus()
+        refreshCharacteristicValues(for: manager.homes)
+    }
+
+    private func refreshCharacteristicValues(for homes: [HMHome]) {
+        let characteristics = homes
+            .flatMap(\.accessories)
+            .flatMap(\.services)
+            .flatMap(\.characteristics)
+            .filter { $0.properties.contains(HMCharacteristicPropertyReadable) }
+
+        for characteristic in characteristics {
+            characteristic.readValue { [weak self, weak characteristic] error in
+                guard error == nil,
+                      let characteristic,
+                      let value = AppleHomeInventory.describeValue(characteristic.value) else { return }
+                Task { @MainActor in
+                    self?.characteristicValues[characteristic.uniqueIdentifier] = value
+                }
+            }
+        }
     }
 
     private func updateAuthorizationStatus() {

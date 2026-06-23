@@ -30,6 +30,12 @@ final class InventorySummaryTests: XCTestCase {
         XCTAssertEqual(homes.first?["accessoryCount"] as? Int, 3)
     }
 
+    func testCharacteristicValueSerialization() throws {
+        XCTAssertEqual(AppleHomeInventory.describeValue("ABC123"), "ABC123")
+        XCTAssertEqual(AppleHomeInventory.describeValue(true), "true")
+        XCTAssertEqual(AppleHomeInventory.describeValue(42), "42")
+    }
+
     func testInventoryEndpointResponse() throws {
         let response = LocalHTTPResponse.response(
             for: "GET /inventory HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n",

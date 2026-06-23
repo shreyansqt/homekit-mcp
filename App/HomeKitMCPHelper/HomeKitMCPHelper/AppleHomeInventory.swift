@@ -42,6 +42,7 @@ struct AppleHomeInventory: Codable {
         let type: String
         let description: String
         let properties: [String]
+        let value: String?
     }
 
     let generatedAt: String
@@ -58,7 +59,13 @@ struct AppleHomeInventory: Codable {
         homes: []
     )
 
-    static func from(homes: [HMHome], selectedHomeName: String?, authorization: String, generatedAt: Date) -> AppleHomeInventory {
+    static func from(
+        homes: [HMHome],
+        selectedHomeName: String?,
+        authorization: String,
+        generatedAt: Date,
+        characteristicValues: [UUID: String] = [:]
+    ) -> AppleHomeInventory {
         AppleHomeInventory(
             generatedAt: ISO8601DateFormatter().string(from: generatedAt),
             authorization: authorization,
@@ -95,7 +102,8 @@ struct AppleHomeInventory: Codable {
                                         Characteristic(
                                             type: characteristic.characteristicType,
                                             description: characteristic.localizedDescription,
-                                            properties: characteristic.properties
+                                            properties: characteristic.properties,
+                                            value: characteristicValues[characteristic.uniqueIdentifier] ?? Self.describeValue(characteristic.value)
                                         )
                                     }
                                 )
@@ -127,6 +135,19 @@ struct AppleHomeInventory: Codable {
             homeCount: filteredHomes.count,
             homes: filteredHomes
         )
+    }
+
+    static func describeValue(_ value: Any?) -> String? {
+        guard let value else { return nil }
+        if let string = value as? String { return string }
+        if let bool = value as? Bool { return bool ? "true" : "false" }
+        if let number = value as? NSNumber { return number.stringValue }
+        if JSONSerialization.isValidJSONObject(value),
+           let data = try? JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]),
+           let text = String(data: data, encoding: .utf8) {
+            return text
+        }
+        return String(describing: value)
     }
 }
 
