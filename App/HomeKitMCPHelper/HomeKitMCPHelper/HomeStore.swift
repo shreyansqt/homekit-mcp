@@ -45,10 +45,17 @@ final class HomeStore: NSObject, ObservableObject {
     private func startServer() {
         guard server == nil else { return }
         do {
-            let server = try LocalHomeKitServer(port: 8765) { [weak self] in
-                guard let self else { return AppleHomeInventory.empty.jsonText }
-                return self.inventoryJSON()
-            }
+            let server = try LocalHomeKitServer(
+                port: 8765,
+                inventoryProvider: { [weak self] in
+                    guard let self else { return AppleHomeInventory.empty.jsonText }
+                    return self.inventoryJSON()
+                },
+                mcpMutationProvider: { [weak self] request in
+                    guard let self else { return Self.jsonResponse(error: "home_store_unavailable") }
+                    return await self.handleMCPMutation(request)
+                }
+            )
             try server.start()
             self.server = server
             serverStatus = "Server: running on \(serverURL)"
@@ -68,6 +75,77 @@ final class HomeStore: NSObject, ObservableObject {
         selectedHomeName = manager.homes.first(where: { !$0.accessories.isEmpty || !$0.rooms.isEmpty })?.name ?? manager.homes.first?.name
         updateAuthorizationStatus()
         refreshCharacteristicValues(for: manager.homes)
+    }
+
+    private func handleMCPMutation(_ request: String) async -> String {
+        guard MCPRequest.toolName(from: request) == "homekit_move_accessory" else {
+            return Self.jsonResponse(error: "unsupported_tool")
+        }
+        guard let homeName = MCPRequest.homeName(from: request),
+              let accessorySerial = MCPRequest.stringArgument("accessory_serial", from: request),
+              let targetRoomName = MCPRequest.stringArgument("room", from: request) else {
+            return Self.jsonResponse(error: "missing_required_arguments")
+        }
+        guard let home = homes.first(where: { $0.name.caseInsensitiveCompare(homeName) == .orderedSame }) else {
+            return Self.jsonResponse(error: "home_not_found", details: ["home": homeName])
+        }
+        guard let room = home.rooms.first(where: { $0.name.caseInsensitiveCompare(targetRoomName) == .orderedSame }) else {
+            return Self.jsonResponse(error: "room_not_found", details: ["room": targetRoomName])
+        }
+        guard let accessory = home.accessories.first(where: { serialNumber(for: $0) == accessorySerial }) else {
+            return Self.jsonResponse(error: "accessory_not_found", details: ["accessory_serial": accessorySerial])
+        }
+
+        let previousRoom = accessory.room?.name
+        do {
+            try await assign(accessory: accessory, to: room, in: home)
+            updateFromManager()
+            return Self.jsonResponse(details: [
+                "status": "ok",
+                "home": home.name,
+                "accessory": accessory.name,
+                "accessory_serial": accessorySerial,
+                "from_room": previousRoom ?? "",
+                "to_room": room.name
+            ])
+        } catch {
+            return Self.jsonResponse(error: "move_failed", details: ["message": error.localizedDescription])
+        }
+    }
+
+    private func serialNumber(for accessory: HMAccessory) -> String? {
+        for service in accessory.services {
+            for characteristic in service.characteristics where characteristic.localizedDescription == "Serial Number" {
+                if let cached = characteristicValues[characteristic.uniqueIdentifier] { return cached }
+                if let value = AppleHomeInventory.describeValue(characteristic.value) { return value }
+            }
+        }
+        return nil
+    }
+
+    private func assign(accessory: HMAccessory, to room: HMRoom, in home: HMHome) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            home.assignAccessory(accessory, to: room) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    private static func jsonResponse(error: String? = nil, details: [String: String] = [:]) -> String {
+        var object = details
+        if let error {
+            object["status"] = "error"
+            object["error"] = error
+        }
+        guard let data = try? JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys]),
+              let text = String(data: data, encoding: .utf8) else {
+            return "{\"status\":\"error\",\"error\":\"json_encoding_failed\"}"
+        }
+        return text
     }
 
     private func refreshCharacteristicValues(for homes: [HMHome]) {

@@ -5,6 +5,7 @@ struct AppleHomeInventory: Codable {
     struct Home: Codable {
         let id: String
         let name: String
+        let currentUserIsAdministrator: Bool?
         let roomCount: Int
         let accessoryCount: Int
         let rooms: [Room]
@@ -75,6 +76,7 @@ struct AppleHomeInventory: Codable {
                 Home(
                     id: home.uniqueIdentifier.uuidString,
                     name: home.name,
+                    currentUserIsAdministrator: home.homeAccessControl(for: home.currentUser).isAdministrator,
                     roomCount: home.rooms.count,
                     accessoryCount: home.accessories.count,
                     rooms: home.rooms.map { room in

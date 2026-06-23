@@ -5,12 +5,18 @@ import Network
 final class LocalHomeKitServer {
     private let port: UInt16
     private let inventoryProvider: @MainActor () -> String
+    private let mcpMutationProvider: (@MainActor (String) async -> String)?
     private var listener: NWListener?
     private var connections: [NWConnection] = []
 
-    init(port: UInt16, inventoryProvider: @escaping @MainActor () -> String) throws {
+    init(
+        port: UInt16,
+        inventoryProvider: @escaping @MainActor () -> String,
+        mcpMutationProvider: (@MainActor (String) async -> String)? = nil
+    ) throws {
         self.port = port
         self.inventoryProvider = inventoryProvider
+        self.mcpMutationProvider = mcpMutationProvider
         self.listener = try NWListener(using: .tcp, on: NWEndpoint.Port(rawValue: port)!)
     }
 
@@ -36,7 +42,13 @@ final class LocalHomeKitServer {
                 guard let self else { return }
                 let request = String(data: data ?? Data(), encoding: .utf8) ?? ""
                 let inventory = self.inventoryProvider()
-                let response = LocalHTTPResponse.response(for: request, inventoryJSON: inventory)
+                let response: Data
+                if MCPRequest.isMoveAccessoryRequest(request), let mcpMutationProvider = self.mcpMutationProvider {
+                    let body = await mcpMutationProvider(request)
+                    response = LocalHTTPResponse.http(status: "200 OK", body: body + "\n")
+                } else {
+                    response = LocalHTTPResponse.response(for: request, inventoryJSON: inventory)
+                }
                 connection.send(content: response, completion: .contentProcessed { _ in
                     connection.cancel()
                 })
@@ -77,7 +89,7 @@ enum LocalHTTPResponse {
         return http(status: "404 Not Found", body: "{\"error\":\"not_found\"}\n")
     }
 
-    private static func http(status: String, body: String) -> Data {
+    static func http(status: String, body: String) -> Data {
         let bodyData = Data(body.utf8)
         let header = """
         HTTP/1.1 \(status)\r
@@ -95,12 +107,16 @@ enum LocalHTTPResponse {
 }
 
 enum MCPRequest {
+    static func isMoveAccessoryRequest(_ request: String) -> Bool {
+        toolName(from: request) == "homekit_move_accessory"
+    }
+
+    static func toolName(from request: String) -> String? {
+        object(from: request)?["tool"] as? String
+    }
+
     static func homeName(from request: String) -> String? {
-        guard let body = request.components(separatedBy: "\r\n\r\n").last,
-              let data = body.data(using: .utf8),
-              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return nil
-        }
+        guard let object = object(from: request) else { return nil }
 
         if let home = object["home"] as? String { return home }
         if let arguments = object["arguments"] as? [String: Any],
@@ -109,6 +125,25 @@ enum MCPRequest {
         }
 
         return nil
+    }
+
+    static func stringArgument(_ name: String, from request: String) -> String? {
+        guard let object = object(from: request) else { return nil }
+        if let value = object[name] as? String { return value }
+        if let arguments = object["arguments"] as? [String: Any],
+           let value = arguments[name] as? String {
+            return value
+        }
+        return nil
+    }
+
+    private static func object(from request: String) -> [String: Any]? {
+        guard let body = request.components(separatedBy: "\r\n\r\n").last,
+              let data = body.data(using: .utf8),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        return object
     }
 
     static func filteredInventory(inventoryJSON: String, homeName: String?) -> String {

@@ -12,6 +12,7 @@ final class InventorySummaryTests: XCTestCase {
                 .init(
                     id: "home-1",
                     name: "Example Home",
+                    currentUserIsAdministrator: true,
                     roomCount: 2,
                     accessoryCount: 3,
                     rooms: [.init(id: "room-1", name: "Living Room")],
@@ -66,8 +67,8 @@ final class InventorySummaryTests: XCTestCase {
             selectedHomeName: "Köpenick Home",
             homeCount: 2,
             homes: [
-                .init(id: "home-1", name: "My Home", roomCount: 0, accessoryCount: 0, rooms: [], accessories: []),
-                .init(id: "home-2", name: "Köpenick Home", roomCount: 9, accessoryCount: 24, rooms: [], accessories: [])
+                .init(id: "home-1", name: "My Home", currentUserIsAdministrator: true, roomCount: 0, accessoryCount: 0, rooms: [], accessories: []),
+                .init(id: "home-2", name: "Köpenick Home", currentUserIsAdministrator: true, roomCount: 9, accessoryCount: 24, rooms: [], accessories: [])
             ]
         )
         let request = "POST /mcp HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n{\"tool\":\"homekit_inventory\",\"arguments\":{\"home\":\"Köpenick Home\"}}"
@@ -77,5 +78,14 @@ final class InventorySummaryTests: XCTestCase {
         XCTAssertTrue(text.contains("\"homeCount\" : 1"))
         XCTAssertTrue(text.contains("Köpenick Home"))
         XCTAssertFalse(text.contains("My Home"))
+    }
+
+    func testMCPMoveAccessoryRequestParsing() throws {
+        let request = "POST /mcp HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n{\"tool\":\"homekit_move_accessory\",\"arguments\":{\"home\":\"Köpenick Home\",\"accessory_serial\":\"light.living_room_floor_lamp\",\"room\":\"Guest Room\"}}"
+
+        XCTAssertTrue(MCPRequest.isMoveAccessoryRequest(request))
+        XCTAssertEqual(MCPRequest.homeName(from: request), "Köpenick Home")
+        XCTAssertEqual(MCPRequest.stringArgument("accessory_serial", from: request), "light.living_room_floor_lamp")
+        XCTAssertEqual(MCPRequest.stringArgument("room", from: request), "Guest Room")
     }
 }
