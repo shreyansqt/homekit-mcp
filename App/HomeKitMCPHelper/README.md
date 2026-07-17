@@ -46,11 +46,15 @@ Executed 9 tests, with 0 failures
 ** TEST SUCCEEDED **
 ```
 
-A normal signed Release build currently succeeds with the configured development team:
+A normal signed build requires your own Apple developer team. The checked-in project intentionally does **not** contain a development team ID or signing identity. Provide one locally, for example:
 
-```text
-Signing Identity:     "Apple Development: Shreyans Jain (B86L4G8TTC)"
-** BUILD SUCCEEDED **
+```bash
+xcodebuild \
+  -project HomeKitMCPHelper.xcodeproj \
+  -scheme HomeKitMCPHelper \
+  -destination 'platform=macOS,variant=Mac Catalyst' \
+  DEVELOPMENT_TEAM=YOURTEAMID \
+  build
 ```
 
 ## Important UI note

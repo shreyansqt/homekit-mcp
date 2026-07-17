@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+"""Small CLI for the local HomeKit MCP Helper HTTP API."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+import urllib.error
+import urllib.request
+from typing import Any
+
+DEFAULT_BASE_URL = os.environ.get("HOMEKIT_MCP_BASE_URL", "http://127.0.0.1:8765")
+
+
+def _url(base_url: str, path: str) -> str:
+    return base_url.rstrip("/") + path
+
+
+def _request(base_url: str, path: str, method: str = "GET", body: dict[str, Any] | None = None) -> Any:
+    data = None
+    headers = {"Accept": "application/json"}
+    if body is not None:
+        data = json.dumps(body).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+
+    request = urllib.request.Request(_url(base_url, path), data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            payload = response.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise SystemExit(f"HTTP {exc.code} from {path}: {detail}") from exc
+    except urllib.error.URLError as exc:
+        raise SystemExit(f"Could not reach HomeKit MCP Helper at {base_url}: {exc.reason}") from exc
+
+    try:
+        return json.loads(payload)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"Expected JSON from {path}, got: {payload[:200]!r}") from exc
+
+
+def _print_json(value: Any) -> None:
+    print(json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False))
+
+
+def _parse_arg(value: str) -> tuple[str, Any]:
+    if "=" not in value:
+        raise argparse.ArgumentTypeError("arguments must be KEY=VALUE")
+    key, raw = value.split("=", 1)
+    if not key:
+        raise argparse.ArgumentTypeError("argument key cannot be empty")
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError:
+        parsed = raw
+    return key, parsed
+
+
+def cmd_health(args: argparse.Namespace) -> None:
+    _print_json(_request(args.base_url, "/health"))
+
+
+def cmd_inventory(args: argparse.Namespace) -> None:
+    if args.home:
+        body = {"tool": "homekit_inventory", "arguments": {"home": args.home}}
+        _print_json(_request(args.base_url, "/mcp", method="POST", body=body))
+    else:
+        _print_json(_request(args.base_url, "/inventory"))
+
+
+def cmd_mcp(args: argparse.Namespace) -> None:
+    if args.json:
+        try:
+            body = json.loads(args.json)
+        except json.JSONDecodeError as exc:
+            raise SystemExit(f"--json must be valid JSON: {exc}") from exc
+    elif args.json_file:
+        with open(args.json_file, "r", encoding="utf-8") as handle:
+            body = json.load(handle)
+    else:
+        arguments = dict(args.arg or [])
+        body = {"tool": args.tool, "arguments": arguments}
+
+    _print_json(_request(args.base_url, "/mcp", method="POST", body=body))
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="CLI for the local HomeKit MCP Helper API")
+    parser.add_argument("--base-url", default=DEFAULT_BASE_URL, help="helper base URL (default: %(default)s)")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    health = subparsers.add_parser("health", help="GET /health")
+    health.set_defaults(func=cmd_health)
+
+    inventory = subparsers.add_parser("inventory", help="GET /inventory or filtered home via POST /mcp")
+    inventory.add_argument("--home", help="filter inventory by Apple Home name through the MCP endpoint")
+    inventory.set_defaults(func=cmd_inventory)
+
+    mcp = subparsers.add_parser("mcp", help="POST /mcp")
+    source = mcp.add_mutually_exclusive_group()
+    source.add_argument("--json", help="complete JSON request body")
+    source.add_argument("--json-file", help="file containing complete JSON request body")
+    mcp.add_argument("--tool", default="homekit_inventory", help="tool name when not using --json/--json-file")
+    mcp.add_argument("--arg", action="append", type=_parse_arg, metavar="KEY=VALUE", help="tool argument; VALUE may be JSON")
+    mcp.set_defaults(func=cmd_mcp)
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    args.func(args)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

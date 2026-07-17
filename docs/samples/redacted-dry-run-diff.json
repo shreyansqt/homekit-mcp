@@ -102,13 +102,13 @@
     }
   ],
   "summary": {
-    "apple_bridged_accessories": 23,
-    "ha_candidate_entities": 38,
+    "apple_bridged_accessories": 10,
+    "ha_candidate_entities": 12,
     "matches_by_status": {
-      "matched": 17,
-      "review": 4,
-      "unmatched": 2
+      "matched": 7,
+      "review": 2,
+      "unmatched": 1
     },
-    "unmatched_ha_candidates": 17
+    "unmatched_ha_candidates": 3
   }
 }

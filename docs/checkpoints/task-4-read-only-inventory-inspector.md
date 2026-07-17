@@ -20,15 +20,15 @@ The HomeKit helper now reads the real authorized Apple Home inventory and expose
   - bridged status via `HMAccessory.isBridged`
   - bridged child IDs/count via `HMAccessory.bridgedAccessories`
   - services and characteristics
-- Redacted real inventory sample: [`../samples/redacted-kopenick-inventory.json`](../samples/redacted-kopenick-inventory.json)
+- Redacted example inventory sample: [`../samples/redacted-example-inventory.json`](../samples/redacted-example-inventory.json)
 
 ## Live verification
 
 ```text
 Home access: authorized
-selectedHomeName: Köpenick Home
-homeCount: 2
-Köpenick Home: 9 rooms, 24 accessories
+selectedHomeName: Example Home
+homeCount: <redacted>
+Example Home: <redacted> rooms, <redacted> accessories
 ```
 
 Filtered MCP-style request:
@@ -36,17 +36,17 @@ Filtered MCP-style request:
 ```bash
 curl -fsS -X POST http://127.0.0.1:8765/mcp \
   -H 'Content-Type: application/json' \
-  -d '{"tool":"homekit_inventory","arguments":{"home":"Köpenick Home"}}'
+  -d '{"tool":"homekit_inventory","arguments":{"home":"Example Home"}}'
 ```
 
 Result summary:
 
 ```text
-selected=Köpenick Home
+selected=Example Home
 homeCount=1
-accessories=24
-isBridged_true=23
-bridge_accessories=1
+accessories=<redacted>
+isBridged_true=<redacted>
+bridge_accessories=<redacted>
 ```
 
 ## Tests
@@ -58,7 +58,7 @@ Executed 4 tests, with 0 failures
 
 ## Notes
 
-Most visible accessories in the selected home report `isBridged=true`, which is the key signal needed for matching Home Assistant HomeKit Bridge accessories. One accessory appears to be a bridge accessory containing bridged children.
+Most visible accessories in the selected home report `isBridged=true`, which is the key signal needed for matching Home Assistant HomeKit Bridge accessories. Exact counts are intentionally redacted from tracked documentation.
 
 No Apple Home mutations were performed.
 

@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Xcode user/local state
+*.xcuserstate
+xcuserdata/
+DerivedData/
+build/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.local
+*.local.*
+
+# Python CLI caches
+__pycache__/
+*.py[cod]
+.pytest_cache/

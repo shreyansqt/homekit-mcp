@@ -2,7 +2,40 @@
 
 Research and product outline for a local Apple Home / HomeKit helper that can sync Apple Home metadata with Home Assistant and expose safe tools over MCP.
 
-Status: research / viability assessment.
+Status: research / viability assessment. The tracked files are sanitized for public review: examples use placeholder home/device names and the Xcode project does not include a personal Apple developer team ID.
+
+## Local helper and CLI
+
+The Mac Catalyst helper lives in [`App/HomeKitMCPHelper`](App/HomeKitMCPHelper). It exposes a localhost-only HTTP API while running:
+
+- `GET /health`
+- `GET /inventory`
+- `POST /mcp`
+
+Use the Python standard-library CLI wrapper in [`bin/homekit-mcp`](bin/homekit-mcp):
+
+```bash
+bin/homekit-mcp health
+bin/homekit-mcp inventory
+bin/homekit-mcp inventory --home "Example Home"
+bin/homekit-mcp mcp --json '{"tool":"homekit_inventory","arguments":{"home":"Example Home"}}'
+```
+
+See [`cli/README.md`](cli/README.md) for detailed usage, including mutation planning/apply examples.
+
+## Local configuration
+
+Copy `.env.example` to `.env` for local-only shell settings if desired. Do not commit `.env` or real Apple developer team IDs. For signed local builds, pass your own team ID to `xcodebuild` or set it in Xcode locally:
+
+```bash
+cd App/HomeKitMCPHelper
+xcodebuild \
+  -project HomeKitMCPHelper.xcodeproj \
+  -scheme HomeKitMCPHelper \
+  -destination 'platform=macOS,variant=Mac Catalyst' \
+  DEVELOPMENT_TEAM=YOURTEAMID \
+  build
+```
 
 ## Documents
 

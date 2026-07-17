@@ -31,7 +31,6 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: local.homekitmcp.helper
         MACOSX_DEPLOYMENT_TARGET: '14.0'
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: KVT6M7Q855
         ENABLE_HARDENED_RUNTIME: YES
         INFOPLIST_FILE: HomeKitMCPHelper/Info.plist
         CODE_SIGN_ENTITLEMENTS: HomeKitMCPHelper/HomeKitMCPHelper.entitlements
