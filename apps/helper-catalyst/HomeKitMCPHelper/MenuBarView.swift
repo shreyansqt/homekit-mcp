@@ -59,12 +59,9 @@ struct MenuBarView: View {
                 homeStore.copyDebugSummary()
             }
 
-            Button("Close") {
-                // Catalyst proof-of-life: keep this non-destructive and avoid
-                // AppKit-only termination APIs. A proper menu bar wrapper can
-                // own quit/launch-at-login behavior later.
-            }
-            .disabled(true)
+            Text("You can close this window; the local server is owned by the app process and keeps running until the app is explicitly quit or stopped by launchd.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 }

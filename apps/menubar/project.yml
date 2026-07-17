@@ -1,0 +1,36 @@
+name: HomeKitMCPMenuBar
+options:
+  bundleIdPrefix: local.homekitmcp
+  deploymentTarget:
+    macOS: '14.0'
+targets:
+  HomeKitMCPMenuBar:
+    type: application
+    platform: macOS
+    deploymentTarget: '14.0'
+    sources:
+      - HomeKitMCPMenuBar
+    info:
+      path: HomeKitMCPMenuBar/Info.plist
+      properties:
+        CFBundleDisplayName: HomeKit MCP Menu Bar
+        LSApplicationCategoryType: public.app-category.utilities
+        LSUIElement: true
+        NSHighResolutionCapable: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: local.homekitmcp.menubar
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+        INFOPLIST_FILE: HomeKitMCPMenuBar/Info.plist
+  HomeKitMCPMenuBarTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: '14.0'
+    sources:
+      - HomeKitMCPMenuBarTests
+    dependencies:
+      - target: HomeKitMCPMenuBar
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: local.homekitmcp.menubar.tests

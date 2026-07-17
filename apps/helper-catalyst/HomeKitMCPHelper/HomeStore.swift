@@ -17,6 +17,10 @@ final class HomeStore: NSObject, ObservableObject {
     private var characteristicValues: [UUID: String] = [:]
 
     func start() {
+        guard manager == nil else {
+            startServer()
+            return
+        }
         let manager = HMHomeManager()
         manager.delegate = self
         self.manager = manager
@@ -78,7 +82,15 @@ final class HomeStore: NSObject, ObservableObject {
     }
 
     private func handleMCPMutation(_ request: String) async -> String {
-        guard MCPRequest.toolName(from: request) == "homekit_move_accessory" else {
+        guard let tool = MCPRequest.toolName(from: request) else {
+            return Self.jsonResponse(error: "unsupported_tool")
+        }
+
+        if tool == "homekit_remove_accessory" {
+            return await handleRemoveAccessory(request)
+        }
+
+        guard tool == "homekit_move_accessory" else {
             return Self.jsonResponse(error: "unsupported_tool")
         }
         guard let homeName = MCPRequest.homeName(from: request),
@@ -92,8 +104,25 @@ final class HomeStore: NSObject, ObservableObject {
         guard let room = home.rooms.first(where: { $0.name.caseInsensitiveCompare(targetRoomName) == .orderedSame }) else {
             return Self.jsonResponse(error: "room_not_found", details: ["room": targetRoomName])
         }
-        guard let accessory = home.accessories.first(where: { serialNumber(for: $0) == accessorySerial }) else {
+        guard let accessory = findAccessory(in: home, identifier: accessorySerial) else {
             return Self.jsonResponse(error: "accessory_not_found", details: ["accessory_serial": accessorySerial])
+        }
+
+        let mode = MCPRequest.mutationMode(from: request)
+        guard mode == "apply" else {
+            return Self.jsonResponse(details: [
+                "status": mode == "dry_run" ? "dry_run" : "planned",
+                "tool": "homekit_move_accessory",
+                "mode": mode,
+                "home": home.name,
+                "accessory": accessory.name,
+                "accessory_serial": accessorySerial,
+                "from_room": accessory.room?.name ?? "",
+                "to_room": room.name
+            ])
+        }
+        guard MCPRequest.boolArgument("confirm_apply", from: request) else {
+            return Self.jsonResponse(error: "apply_requires_confirm_apply")
         }
 
         let previousRoom = accessory.room?.name
@@ -113,6 +142,60 @@ final class HomeStore: NSObject, ObservableObject {
         }
     }
 
+    private func handleRemoveAccessory(_ request: String) async -> String {
+        guard let homeName = MCPRequest.homeName(from: request),
+              let accessoryIdentifier = MCPRequest.stringArgument("accessory", from: request)
+                ?? MCPRequest.stringArgument("accessory_name", from: request)
+                ?? MCPRequest.stringArgument("accessory_serial", from: request)
+                ?? MCPRequest.stringArgument("accessory_id", from: request) else {
+            return Self.jsonResponse(error: "missing_required_arguments")
+        }
+        guard let home = homes.first(where: { $0.name.caseInsensitiveCompare(homeName) == .orderedSame }) else {
+            return Self.jsonResponse(error: "home_not_found", details: ["home": homeName])
+        }
+        guard let accessory = findAccessory(in: home, identifier: accessoryIdentifier) else {
+            return Self.jsonResponse(error: "accessory_not_found", details: ["accessory": accessoryIdentifier])
+        }
+
+        let mode = MCPRequest.mutationMode(from: request)
+        guard mode == "apply" else {
+            return Self.jsonResponse(details: [
+                "status": mode == "dry_run" ? "dry_run" : "planned",
+                "tool": "homekit_remove_accessory",
+                "mode": mode,
+                "home": home.name,
+                "accessory": accessory.name,
+                "requested_accessory": accessoryIdentifier,
+                "from_room": accessory.room?.name ?? ""
+            ])
+        }
+        guard MCPRequest.boolArgument("confirm_apply", from: request) else {
+            return Self.jsonResponse(error: "apply_requires_confirm_apply")
+        }
+
+        do {
+            let removedName = accessory.name
+            try await remove(accessory: accessory, from: home)
+            updateFromManager()
+            return Self.jsonResponse(details: [
+                "status": "ok",
+                "home": home.name,
+                "removed_accessory": removedName,
+                "requested_accessory": accessoryIdentifier
+            ])
+        } catch {
+            return Self.jsonResponse(error: "remove_failed", details: ["message": error.localizedDescription])
+        }
+    }
+
+    private func findAccessory(in home: HMHome, identifier: String) -> HMAccessory? {
+        home.accessories.first { accessory in
+            accessory.uniqueIdentifier.uuidString.caseInsensitiveCompare(identifier) == .orderedSame
+                || accessory.name.caseInsensitiveCompare(identifier) == .orderedSame
+                || serialNumber(for: accessory)?.caseInsensitiveCompare(identifier) == .orderedSame
+        }
+    }
+
     private func serialNumber(for accessory: HMAccessory) -> String? {
         for service in accessory.services {
             for characteristic in service.characteristics where characteristic.localizedDescription == "Serial Number" {
@@ -126,6 +209,18 @@ final class HomeStore: NSObject, ObservableObject {
     private func assign(accessory: HMAccessory, to room: HMRoom, in home: HMHome) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             home.assignAccessory(accessory, to: room) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+
+    private func remove(accessory: HMAccessory, from home: HMHome) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            home.removeAccessory(accessory) { error in
                 if let error {
                     continuation.resume(throwing: error)
                 } else {

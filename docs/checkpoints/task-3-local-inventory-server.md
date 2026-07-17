@@ -33,20 +33,20 @@ This keeps the app shape boring: launch helper, grant Apple Home access, then ag
 ### Regenerate project
 
 ```bash
-cd App/HomeKitMCPHelper
+cd apps/helper-catalyst
 xcodegen generate
 ```
 
 Result:
 
 ```text
-Created project at /Users/grumpyorange/homekit-mcp-research/App/HomeKitMCPHelper/HomeKitMCPHelper.xcodeproj
+Created project at apps/helper-catalyst/HomeKitMCPHelper.xcodeproj
 ```
 
 ### Build and tests
 
 ```bash
-cd App/HomeKitMCPHelper
+cd apps/helper-catalyst
 xcodebuild \
   -project HomeKitMCPHelper.xcodeproj \
   -scheme HomeKitMCPHelper \

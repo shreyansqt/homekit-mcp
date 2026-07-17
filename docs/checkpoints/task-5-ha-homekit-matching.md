@@ -39,12 +39,12 @@ The proposed model uses:
 The prototype dry-run found:
 
 ```text
-Apple Home bridged accessories: 23
-HA candidate entities: 38
-Matched: 17
-Needs review: 4
-Unmatched Apple candidates: 2
-Unmatched HA candidates: 17
+Apple Home bridged accessories: <redacted>
+HA candidate entities: <redacted>
+Matched: <redacted>
+Needs review: <redacted>
+Unmatched Apple candidates: <redacted>
+Unmatched HA candidates: <redacted>
 ```
 
 Expected review cases appeared, especially:

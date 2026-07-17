@@ -15,11 +15,14 @@ targets:
       properties:
         CFBundleDisplayName: HomeKit MCP Helper
         LSApplicationCategoryType: public.app-category.utilities
+        NSSupportsAutomaticTermination: false
+        NSSupportsSuddenTermination: false
         NSHomeKitUsageDescription: This app needs access to Apple Home to inspect rooms and accessories for local metadata synchronization.
     entitlements:
       path: HomeKitMCPHelper/HomeKitMCPHelper.entitlements
       properties:
         com.apple.developer.homekit: true
+        com.apple.security.app-sandbox: true
         com.apple.security.network.server: true
     settings:
       base:
