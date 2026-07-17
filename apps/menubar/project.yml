@@ -17,6 +17,8 @@ targets:
         LSApplicationCategoryType: public.app-category.utilities
         LSUIElement: true
         NSHighResolutionCapable: true
+        NSSupportsAutomaticTermination: false
+        NSSupportsSuddenTermination: false
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: local.homekitmcp.menubar

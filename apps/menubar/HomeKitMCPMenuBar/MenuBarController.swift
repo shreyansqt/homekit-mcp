@@ -21,7 +21,7 @@ final class MenuBarController: NSObject {
     init(client: HelperHTTPClient, launchAgent: LaunchAgentController) {
         self.client = client
         self.launchAgent = launchAgent
-        self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        self.statusItem = NSStatusBar.system.statusItem(withLength: 64)
         super.init()
         configureStatusItem()
         configureMenu()
@@ -45,9 +45,9 @@ final class MenuBarController: NSObject {
 
     private func configureStatusItem() {
         guard let button = statusItem.button else { return }
-        button.image = NSImage(systemSymbolName: "house.circle", accessibilityDescription: "HomeKit MCP Helper")
-        button.imagePosition = .imageLeading
-        button.title = "HK"
+        button.image = nil
+        button.title = "HK…"
+        statusItem.isVisible = true
         statusItem.menu = menu
     }
 
