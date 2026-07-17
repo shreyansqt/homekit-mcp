@@ -60,6 +60,11 @@ final class InventorySummaryTests: XCTestCase {
         XCTAssertTrue(text.contains("\"status\":\"ok\""))
     }
 
+    func testMacHelperInfoPlistDisablesAutomaticTermination() throws {
+        XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "NSSupportsAutomaticTermination") as? Bool, false)
+        XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "NSSupportsSuddenTermination") as? Bool, false)
+    }
+
     func testRootEndpointAdvertisesMutationModes() throws {
         let response = LocalHTTPResponse.response(
             for: "GET / HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n",

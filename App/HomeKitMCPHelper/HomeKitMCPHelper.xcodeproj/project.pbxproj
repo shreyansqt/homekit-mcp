@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4301699539A67CD07AD54D83 /* LocalHomeKitServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A922E5AB99E9F11F5A462A9B /* LocalHomeKitServer.swift */; };
 		684B9B16EB52F513E53971BF /* AppleHomeInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8076EE9CC9459D0713A7F7A /* AppleHomeInventory.swift */; };
+		7246D046E090C76F5EA00122 /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8CEFB0733F32591725CFD6D /* StatusBarController.swift */; };
 		B07A20509926BCFD919B388C /* HomeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1651367D13B4849BC3A50027 /* HomeStore.swift */; };
 		D9A864C4F9715A32EB14B148 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9685AA2E7D2EA3F37302BC21 /* MenuBarView.swift */; };
 		F3480C2E17EFA9FFCF9E75C6 /* InventorySummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1649A7EE566280DB03BE65DE /* InventorySummaryTests.swift */; };
@@ -36,6 +37,7 @@
 		A922E5AB99E9F11F5A462A9B /* LocalHomeKitServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalHomeKitServer.swift; sourceTree = "<group>"; };
 		C80731326D09E9473F23E75C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D8076EE9CC9459D0713A7F7A /* AppleHomeInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHomeInventory.swift; sourceTree = "<group>"; };
+		F8CEFB0733F32591725CFD6D /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -75,6 +77,7 @@
 				C80731326D09E9473F23E75C /* Info.plist */,
 				A922E5AB99E9F11F5A462A9B /* LocalHomeKitServer.swift */,
 				9685AA2E7D2EA3F37302BC21 /* MenuBarView.swift */,
+				F8CEFB0733F32591725CFD6D /* StatusBarController.swift */,
 			);
 			path = HomeKitMCPHelper;
 			sourceTree = "<group>";
@@ -170,6 +173,7 @@
 				B07A20509926BCFD919B388C /* HomeStore.swift in Sources */,
 				4301699539A67CD07AD54D83 /* LocalHomeKitServer.swift in Sources */,
 				D9A864C4F9715A32EB14B148 /* MenuBarView.swift in Sources */,
+				7246D046E090C76F5EA00122 /* StatusBarController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
