@@ -92,6 +92,9 @@ final class HomeStore: NSObject, ObservableObject {
         if tool == "homekit_create_scene" {
             return await handleCreateScene(request)
         }
+        if tool == "homekit_remove_scene" {
+            return await handleRemoveScene(request)
+        }
 
         guard tool == "homekit_move_accessory" else {
             return Self.jsonResponse(error: "unsupported_tool")
@@ -191,6 +194,42 @@ final class HomeStore: NSObject, ObservableObject {
         }
     }
 
+
+
+    private func handleRemoveScene(_ request: String) async -> String {
+        guard let homeName = MCPRequest.homeName(from: request),
+              let sceneName = MCPRequest.stringArgument("name", from: request) else {
+            return Self.jsonResponse(error: "missing_required_arguments")
+        }
+        guard let home = homes.first(where: { $0.name.caseInsensitiveCompare(homeName) == .orderedSame }) else {
+            return Self.jsonResponse(error: "home_not_found", details: ["home": homeName])
+        }
+        guard let actionSet = home.actionSets.first(where: { $0.name.caseInsensitiveCompare(sceneName) == .orderedSame }) else {
+            return Self.jsonResponse(object: ["status": "not_found", "home": home.name, "scene": sceneName])
+        }
+        let mode = MCPRequest.mutationMode(from: request)
+        guard mode == "apply" else {
+            return Self.jsonResponse(object: [
+                "status": mode == "dry_run" ? "dry_run" : "planned",
+                "tool": "homekit_remove_scene",
+                "mode": mode,
+                "home": home.name,
+                "scene": actionSet.name,
+                "action_count": actionSet.actions.count
+            ])
+        }
+        guard MCPRequest.boolArgument("confirm_apply", from: request) else {
+            return Self.jsonResponse(error: "apply_requires_confirm_apply")
+        }
+        do {
+            let removed = actionSet.name
+            try await remove(actionSet: actionSet, from: home)
+            updateFromManager()
+            return Self.jsonResponse(object: ["status": "ok", "home": home.name, "removed_scene": removed])
+        } catch {
+            return Self.jsonResponse(error: "scene_remove_failed", details: ["message": error.localizedDescription])
+        }
+    }
 
     private func handleCreateScene(_ request: String) async -> String {
         guard let homeName = MCPRequest.homeName(from: request),

@@ -81,7 +81,7 @@ enum LocalHTTPResponse {
 
         if firstLine.hasPrefix("GET / ") {
             let body = """
-            {"name":"HomeKit MCP Helper","tools":[{"name":"homekit_inventory","mode":"read_only"},{"name":"homekit_move_accessory","modes":["dry_run","plan","apply"],"default_mode":"plan"},{"name":"homekit_remove_accessory","modes":["dry_run","plan","apply"],"default_mode":"plan"},{"name":"homekit_create_scene","modes":["dry_run","plan","apply"],"default_mode":"plan"}],"endpoints":{"health":"/health","inventory":"/inventory","mcp":"/mcp"}}
+            {"name":"HomeKit MCP Helper","tools":[{"name":"homekit_inventory","mode":"read_only"},{"name":"homekit_move_accessory","modes":["dry_run","plan","apply"],"default_mode":"plan"},{"name":"homekit_remove_accessory","modes":["dry_run","plan","apply"],"default_mode":"plan"},{"name":"homekit_create_scene","modes":["dry_run","plan","apply"],"default_mode":"plan"},{"name":"homekit_remove_scene","modes":["dry_run","plan","apply"],"default_mode":"plan"}],"endpoints":{"health":"/health","inventory":"/inventory","mcp":"/mcp"}}
             """
             return http(status: "200 OK", body: body + "\n")
         }
@@ -108,7 +108,7 @@ enum LocalHTTPResponse {
 
 enum MCPRequest {
     static func isMutationRequest(_ request: String) -> Bool {
-        ["homekit_move_accessory", "homekit_remove_accessory", "homekit_create_scene"].contains(toolName(from: request))
+        ["homekit_move_accessory", "homekit_remove_accessory", "homekit_create_scene", "homekit_remove_scene"].contains(toolName(from: request))
     }
 
     static func toolName(from request: String) -> String? {
