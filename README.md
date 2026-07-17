@@ -10,6 +10,7 @@ Status: research / viability assessment.
 - [`docs/product-outline.md`](docs/product-outline.md) — proposed architecture, MVP, MCP tools, and open questions.
 - [`docs/prototype-plan.md`](docs/prototype-plan.md) — gated prototype plan, acceptance tests, permissions, and safety checkpoints.
 - [`docs/matching-strategy.md`](docs/matching-strategy.md) — Home Assistant ↔ Apple Home matching and dry-run diff design.
+- [`docs/mcp-tool-surface.md`](docs/mcp-tool-surface.md) — MCP tool schemas, read-only-first contract, and mutation dry-run/plan/apply rules.
 
 ## Checkpoints
 

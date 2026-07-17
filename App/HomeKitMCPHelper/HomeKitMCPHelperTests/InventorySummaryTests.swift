@@ -60,6 +60,20 @@ final class InventorySummaryTests: XCTestCase {
         XCTAssertTrue(text.contains("\"status\":\"ok\""))
     }
 
+    func testRootEndpointAdvertisesMutationModes() throws {
+        let response = LocalHTTPResponse.response(
+            for: "GET / HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n",
+            inventoryJSON: "{}"
+        )
+        let text = try XCTUnwrap(String(data: response, encoding: .utf8))
+
+        XCTAssertTrue(text.contains("homekit_inventory"))
+        XCTAssertTrue(text.contains("homekit_move_accessory"))
+        XCTAssertTrue(text.contains("dry_run"))
+        XCTAssertTrue(text.contains("plan"))
+        XCTAssertTrue(text.contains("apply"))
+    }
+
     func testMCPRequestFiltersHome() throws {
         let summary = AppleHomeInventory(
             generatedAt: "2026-06-19T00:00:00Z",
@@ -83,9 +97,18 @@ final class InventorySummaryTests: XCTestCase {
     func testMCPMoveAccessoryRequestParsing() throws {
         let request = "POST /mcp HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n{\"tool\":\"homekit_move_accessory\",\"arguments\":{\"home\":\"Köpenick Home\",\"accessory_serial\":\"light.living_room_floor_lamp\",\"room\":\"Guest Room\"}}"
 
-        XCTAssertTrue(MCPRequest.isMoveAccessoryRequest(request))
+        XCTAssertTrue(MCPRequest.isMutationRequest(request))
         XCTAssertEqual(MCPRequest.homeName(from: request), "Köpenick Home")
         XCTAssertEqual(MCPRequest.stringArgument("accessory_serial", from: request), "light.living_room_floor_lamp")
         XCTAssertEqual(MCPRequest.stringArgument("room", from: request), "Guest Room")
+        XCTAssertEqual(MCPRequest.mutationMode(from: request), "plan")
+    }
+
+    func testMCPMutationApplyConfirmationParsing() throws {
+        let request = "POST /mcp HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n{\"tool\":\"homekit_move_accessory\",\"arguments\":{\"home\":\"Example Home\",\"accessory_serial\":\"light.example_lamp\",\"room\":\"Guest Room\",\"mode\":\"apply\",\"confirm_apply\":true}}"
+
+        XCTAssertTrue(MCPRequest.isMutationRequest(request))
+        XCTAssertEqual(MCPRequest.mutationMode(from: request), "apply")
+        XCTAssertTrue(MCPRequest.boolArgument("confirm_apply", from: request))
     }
 }

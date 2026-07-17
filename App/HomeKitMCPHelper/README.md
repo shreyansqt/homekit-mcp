@@ -11,7 +11,7 @@ Endpoints:
 - `GET /health`
 - `GET /`
 - `GET /inventory`
-- `POST /mcp` — current simple MCP-style bridge stub, returns inventory JSON.
+- `POST /mcp` — current simple MCP-style bridge stub. Read-only inventory returns JSON; mutation skeletons default to `plan` and require `mode: "apply"` plus `confirm_apply: true` before calling HomeKit mutation APIs.
 
 ```bash
 xcodebuild \
