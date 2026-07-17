@@ -61,7 +61,9 @@ xcodebuild \
 
 The helper now owns HomeKit and the localhost server from app-level state, with automatic/sudden termination disabled. Closing the visible SwiftUI status window should no longer be treated as quitting the helper; the localhost HomeKit bridge remains alive until the process is explicitly quit or stopped by launchd.
 
-This is still not a true status-item menu extra. SwiftUI `MenuBarExtra` and AppKit `NSStatusItem`/`NSMenu` are unavailable to this Mac Catalyst target, while HomeKit access is not available to a normal native AppKit command-line helper. We intentionally do **not** hide the Catalyst app with `LSUIElement`, because HomeKit privacy prompts need normal app presentation. The remaining polished approach is a tiny native AppKit menu-bar wrapper/launcher that talks to this Catalyst HomeKit-authorized helper over localhost.
+This is still not a true status-item menu extra. SwiftUI `MenuBarExtra` and AppKit `NSStatusItem`/`NSMenu` are unavailable to this Mac Catalyst target, while HomeKit access is not available to a normal native AppKit command-line helper. We intentionally do **not** hide the Catalyst app with `LSUIElement`, because HomeKit privacy prompts need normal app presentation.
+
+A tiny native AppKit wrapper has been added in [`../HomeKitMCPMenuBar`](../HomeKitMCPMenuBar). It owns the actual menu-bar status item and talks to this Catalyst helper over localhost for health/inventory; HomeKit access remains here in the Catalyst app.
 
 ## Files
 

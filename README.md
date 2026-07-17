@@ -6,11 +6,13 @@ Status: research / viability assessment. The tracked files are sanitized for pub
 
 ## Local helper and CLI
 
-The Mac Catalyst helper lives in [`App/HomeKitMCPHelper`](App/HomeKitMCPHelper). It exposes a localhost-only HTTP API while running:
+The Mac Catalyst helper lives in [`App/HomeKitMCPHelper`](App/HomeKitMCPHelper). It owns all HomeKit access and exposes a localhost-only HTTP API while running:
 
 - `GET /health`
 - `GET /inventory`
 - `POST /mcp`
+
+A native macOS menu-bar wrapper lives in [`App/HomeKitMCPMenuBar`](App/HomeKitMCPMenuBar). It is an `LSUIElement` AppKit status item that keeps HomeKit access in the Catalyst helper, reads health/inventory from `http://127.0.0.1:8765`, opens the helper window, refreshes status, restarts the helper LaunchAgent, and quits only the wrapper.
 
 Use the Python standard-library CLI wrapper in [`bin/homekit-mcp`](bin/homekit-mcp):
 
