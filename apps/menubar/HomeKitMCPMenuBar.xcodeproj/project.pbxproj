@@ -11,6 +11,7 @@
 		0FFC95EC5B6BA5BD0BB386B1 /* LaunchAgentController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE9579F0B0FB625736B20906 /* LaunchAgentController.swift */; };
 		8CF482197FA4A92A18FD16FA /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 528EC3F4E2A8CA6682FF56D3 /* MenuBarController.swift */; };
 		96B236999072E3535DFBBD69 /* HelperHTTPClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AF60C4E742E00BCE425604 /* HelperHTTPClientTests.swift */; };
+		B78DCC78169C95FB1877DD41 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 714CF3E892ABD14481571E28 /* main.swift */; };
 		B7C1C23C19D5257818458B04 /* HelperHTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 785675EE6EBD3D7A05AF3F91 /* HelperHTTPClient.swift */; };
 		E806A618755C985B9332BB0A /* HomeKitMCPMenuBarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B2DDE2BBF71200F4CF35B7 /* HomeKitMCPMenuBarApp.swift */; };
 /* End PBXBuildFile section */
@@ -27,6 +28,7 @@
 
 /* Begin PBXFileReference section */
 		528EC3F4E2A8CA6682FF56D3 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
+		714CF3E892ABD14481571E28 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		785675EE6EBD3D7A05AF3F91 /* HelperHTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelperHTTPClient.swift; sourceTree = "<group>"; };
 		9642544F9BE95ADDC408548B /* HomeKitMCPMenuBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HomeKitMCPMenuBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE9579F0B0FB625736B20906 /* LaunchAgentController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAgentController.swift; sourceTree = "<group>"; };
@@ -63,6 +65,7 @@
 				E2B2DDE2BBF71200F4CF35B7 /* HomeKitMCPMenuBarApp.swift */,
 				D7D3D51943FC04DC6D1650A9 /* Info.plist */,
 				AE9579F0B0FB625736B20906 /* LaunchAgentController.swift */,
+				714CF3E892ABD14481571E28 /* main.swift */,
 				528EC3F4E2A8CA6682FF56D3 /* MenuBarController.swift */,
 				FFDC12A8FB61EB8B47A3B2D3 /* Models.swift */,
 			);
@@ -167,6 +170,7 @@
 				0FFC95EC5B6BA5BD0BB386B1 /* LaunchAgentController.swift in Sources */,
 				8CF482197FA4A92A18FD16FA /* MenuBarController.swift in Sources */,
 				0CB6A77317464FB20BB3D42D /* Models.swift in Sources */,
+				B78DCC78169C95FB1877DD41 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
