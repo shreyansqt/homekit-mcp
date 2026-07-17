@@ -5,7 +5,7 @@ It talks to the helper on `http://127.0.0.1:8765` by default and uses only the P
 
 ## Prerequisites
 
-1. Build and run `App/HomeKitMCPHelper` on the same Mac.
+1. Build and run `apps/helper-catalyst` on the same Mac.
 2. Grant Apple Home permission when macOS prompts.
 3. Confirm the helper shows the localhost server as running.
 

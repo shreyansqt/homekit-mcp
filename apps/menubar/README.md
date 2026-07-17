@@ -16,7 +16,7 @@ The wrapper deliberately does **not** link HomeKit or request HomeKit entitlemen
 ## Build and test
 
 ```bash
-cd App/HomeKitMCPMenuBar
+cd apps/menubar
 xcodegen generate
 xcodebuild \
   -project HomeKitMCPMenuBar.xcodeproj \

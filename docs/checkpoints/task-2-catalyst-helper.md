@@ -2,7 +2,7 @@
 
 ## Summary
 
-A minimal HomeKit helper app skeleton exists under `App/HomeKitMCPHelper` and now builds successfully as a Mac Catalyst app when code signing is disabled.
+A minimal HomeKit helper app skeleton exists under `apps/helper-catalyst` and now builds successfully as a Mac Catalyst app when code signing is disabled.
 
 The helper is currently a small native-style Catalyst window, not a true menu bar extra. This is intentional after verification: SwiftUI `MenuBarExtra` is unavailable to this Mac Catalyst target. A future menu bar product shape likely needs either:
 
@@ -39,20 +39,20 @@ Xcode 26.5 / build 17F42
 ### Xcode project generation
 
 ```bash
-cd App/HomeKitMCPHelper
+cd apps/helper-catalyst
 xcodegen generate
 ```
 
 Result:
 
 ```text
-Created project at /Users/grumpyorange/homekit-mcp-research/App/HomeKitMCPHelper/HomeKitMCPHelper.xcodeproj
+Created project at apps/helper-catalyst/HomeKitMCPHelper.xcodeproj
 ```
 
 ### Plist validation
 
 ```bash
-plutil -p App/HomeKitMCPHelper/HomeKitMCPHelper/Info.plist
+plutil -p apps/helper-catalyst/HomeKitMCPHelper/Info.plist
 ```
 
 Confirmed generated plist contains:
@@ -64,7 +64,7 @@ NSHomeKitUsageDescription = "This app needs access to Apple Home to inspect room
 ### Unsigned Mac Catalyst build
 
 ```bash
-cd App/HomeKitMCPHelper
+cd apps/helper-catalyst
 xcodebuild \
   -project HomeKitMCPHelper.xcodeproj \
   -scheme HomeKitMCPHelper \
@@ -82,7 +82,7 @@ Result:
 ### Unsigned Mac Catalyst tests
 
 ```bash
-cd App/HomeKitMCPHelper
+cd apps/helper-catalyst
 xcodebuild \
   -project HomeKitMCPHelper.xcodeproj \
   -scheme HomeKitMCPHelper \
@@ -102,7 +102,7 @@ Executed 1 test, with 0 failures
 ### Signed build attempt
 
 ```bash
-cd App/HomeKitMCPHelper
+cd apps/helper-catalyst
 xcodebuild \
   -project HomeKitMCPHelper.xcodeproj \
   -scheme HomeKitMCPHelper \

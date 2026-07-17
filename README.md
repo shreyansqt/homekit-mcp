@@ -1,18 +1,33 @@
-# HomeKit MCP Research
+# HomeKit MCP
 
-Research and product outline for a local Apple Home / HomeKit helper that can sync Apple Home metadata with Home Assistant and expose safe tools over MCP.
+Local Apple Home / HomeKit helper research prototype. The project explores a Mac helper that can inspect Apple Home metadata, compare it with Home Assistant naming/room data, and expose safe read-first tools over an MCP-style local interface.
 
-Status: research / viability assessment. The tracked files are sanitized for public review: examples use placeholder home/device names and the Xcode project does not include a personal Apple developer team ID.
+Status: prototype / public-readiness review. Tracked files are sanitized for public review: examples use placeholder home/device names, localhost URLs only, and no personal Apple developer team ID or signing identity is checked in.
 
-## Local helper and CLI
+## Repository layout
 
-The Mac Catalyst helper lives in [`App/HomeKitMCPHelper`](App/HomeKitMCPHelper). It owns all HomeKit access and exposes a localhost-only HTTP API while running:
+```text
+apps/
+  helper-catalyst/   Mac Catalyst app that owns HomeKit permission and localhost API
+  menubar/           Native AppKit menu-bar wrapper for the helper
+bin/homekit-mcp      Python standard-library CLI for the helper API
+cli/README.md        CLI usage examples
+docs/                Research notes, tool-surface design, checkpoints, and sanitized samples
+```
+
+## Apps
+
+The Mac Catalyst helper lives in [`apps/helper-catalyst`](apps/helper-catalyst). It owns all HomeKit access and exposes a localhost-only HTTP API while running:
 
 - `GET /health`
 - `GET /inventory`
 - `POST /mcp`
 
-A native macOS menu-bar wrapper lives in [`App/HomeKitMCPMenuBar`](App/HomeKitMCPMenuBar). It is an `LSUIElement` AppKit status item that keeps HomeKit access in the Catalyst helper, reads health/inventory from `http://127.0.0.1:8765`, opens the helper window, refreshes status, restarts the helper LaunchAgent, and quits only the wrapper.
+The native macOS menu-bar wrapper lives in [`apps/menubar`](apps/menubar). It is an `LSUIElement` AppKit status item that keeps HomeKit access in the Catalyst helper, reads health/inventory from `http://127.0.0.1:8765`, opens the helper window, refreshes status, restarts the helper LaunchAgent, and quits only the wrapper.
+
+Both app directories keep their own XcodeGen `project.yml` as source of truth. Checked-in `.xcodeproj` files are generated from those specs for convenience.
+
+## CLI
 
 Use the Python standard-library CLI wrapper in [`bin/homekit-mcp`](bin/homekit-mcp):
 
@@ -30,13 +45,30 @@ See [`cli/README.md`](cli/README.md) for detailed usage, including mutation plan
 Copy `.env.example` to `.env` for local-only shell settings if desired. Do not commit `.env` or real Apple developer team IDs. For signed local builds, pass your own team ID to `xcodebuild` or set it in Xcode locally:
 
 ```bash
-cd App/HomeKitMCPHelper
+cd apps/helper-catalyst
 xcodebuild \
   -project HomeKitMCPHelper.xcodeproj \
   -scheme HomeKitMCPHelper \
   -destination 'platform=macOS,variant=Mac Catalyst' \
   DEVELOPMENT_TEAM=YOURTEAMID \
   build
+```
+
+## Build and test
+
+Regenerate Xcode projects after changing `project.yml` files:
+
+```bash
+(cd apps/helper-catalyst && xcodegen generate)
+(cd apps/menubar && xcodegen generate)
+```
+
+Unsigned local verification:
+
+```bash
+(cd apps/helper-catalyst && xcodebuild -project HomeKitMCPHelper.xcodeproj -scheme HomeKitMCPHelper -destination 'platform=macOS,variant=Mac Catalyst' CODE_SIGNING_ALLOWED=NO test)
+(cd apps/menubar && xcodebuild -project HomeKitMCPMenuBar.xcodeproj -scheme HomeKitMCPMenuBar -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test)
+python3 -m py_compile bin/homekit-mcp
 ```
 
 ## Documents
