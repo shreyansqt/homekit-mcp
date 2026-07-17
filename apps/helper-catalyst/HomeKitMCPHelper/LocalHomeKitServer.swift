@@ -43,7 +43,7 @@ final class LocalHomeKitServer {
                 let request = String(data: data ?? Data(), encoding: .utf8) ?? ""
                 let inventory = self.inventoryProvider()
                 let response: Data
-                if MCPRequest.isMoveAccessoryRequest(request), let mcpMutationProvider = self.mcpMutationProvider {
+                if MCPRequest.isMutationRequest(request), let mcpMutationProvider = self.mcpMutationProvider {
                     let body = await mcpMutationProvider(request)
                     response = LocalHTTPResponse.http(status: "200 OK", body: body + "\n")
                 } else {
@@ -81,7 +81,7 @@ enum LocalHTTPResponse {
 
         if firstLine.hasPrefix("GET / ") {
             let body = """
-            {"name":"HomeKit MCP Helper","tools":["homekit_inventory"],"endpoints":{"health":"/health","inventory":"/inventory","mcp":"/mcp"}}
+            {"name":"HomeKit MCP Helper","tools":[{"name":"homekit_inventory","mode":"read_only"},{"name":"homekit_move_accessory","modes":["dry_run","plan","apply"],"default_mode":"plan"},{"name":"homekit_remove_accessory","modes":["dry_run","plan","apply"],"default_mode":"plan"}],"endpoints":{"health":"/health","inventory":"/inventory","mcp":"/mcp"}}
             """
             return http(status: "200 OK", body: body + "\n")
         }
@@ -107,8 +107,8 @@ enum LocalHTTPResponse {
 }
 
 enum MCPRequest {
-    static func isMoveAccessoryRequest(_ request: String) -> Bool {
-        toolName(from: request) == "homekit_move_accessory"
+    static func isMutationRequest(_ request: String) -> Bool {
+        ["homekit_move_accessory", "homekit_remove_accessory"].contains(toolName(from: request))
     }
 
     static func toolName(from request: String) -> String? {
@@ -135,6 +135,21 @@ enum MCPRequest {
             return value
         }
         return nil
+    }
+
+    static func boolArgument(_ name: String, from request: String) -> Bool {
+        guard let object = object(from: request) else { return false }
+        if let value = object[name] as? Bool { return value }
+        if let arguments = object["arguments"] as? [String: Any],
+           let value = arguments[name] as? Bool {
+            return value
+        }
+        return false
+    }
+
+    static func mutationMode(from request: String) -> String {
+        let mode = stringArgument("mode", from: request)?.lowercased() ?? "plan"
+        return ["dry_run", "plan", "apply"].contains(mode) ? mode : "plan"
     }
 
     private static func object(from request: String) -> [String: Any]? {
