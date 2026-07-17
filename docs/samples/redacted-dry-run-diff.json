@@ -1,0 +1,114 @@
+{
+  "matches": [
+    {
+      "apple_accessory": "Accessory 1",
+      "apple_domain": "light",
+      "apple_room": "Bedroom",
+      "ha_entity": "light.example_1",
+      "ha_room": "Bedroom",
+      "room_action": false,
+      "score": 1.0,
+      "status": "matched"
+    },
+    {
+      "apple_accessory": "Accessory 2",
+      "apple_domain": "light",
+      "apple_room": "Living Room",
+      "ha_entity": "light.example_2",
+      "ha_room": "Guest Room",
+      "room_action": true,
+      "score": 0.7,
+      "status": "review"
+    },
+    {
+      "apple_accessory": "Accessory 3",
+      "apple_domain": "cover",
+      "apple_room": "Living Room",
+      "ha_entity": "cover.example_3",
+      "ha_room": "Living Room",
+      "room_action": false,
+      "score": 1.0,
+      "status": "matched"
+    },
+    {
+      "apple_accessory": "Accessory 4",
+      "apple_domain": "light",
+      "apple_room": "Bedroom",
+      "ha_entity": "light.example_4",
+      "ha_room": "Bedroom",
+      "room_action": false,
+      "score": 1.0,
+      "status": "matched"
+    },
+    {
+      "apple_accessory": "Accessory 5",
+      "apple_domain": "light",
+      "apple_room": "Store Room",
+      "ha_entity": "light.example_5",
+      "ha_room": "Store Room",
+      "room_action": false,
+      "score": 1.0,
+      "status": "matched"
+    },
+    {
+      "apple_accessory": "Accessory 6",
+      "apple_domain": "light",
+      "apple_room": "Guest Room",
+      "ha_entity": "light.example_6",
+      "ha_room": "Guest Room",
+      "room_action": false,
+      "score": 0.78,
+      "status": "review"
+    },
+    {
+      "apple_accessory": "Accessory 7",
+      "apple_domain": "light",
+      "apple_room": "Bedroom",
+      "ha_entity": "light.example_7",
+      "ha_room": "Bedroom",
+      "room_action": false,
+      "score": 1.0,
+      "status": "matched"
+    },
+    {
+      "apple_accessory": "Accessory 8",
+      "apple_domain": "light",
+      "apple_room": "Hallway",
+      "ha_entity": "light.example_8",
+      "ha_room": "Hallway",
+      "room_action": false,
+      "score": 1.0,
+      "status": "matched"
+    },
+    {
+      "apple_accessory": "Accessory 9",
+      "apple_domain": "light",
+      "apple_room": "Living Room",
+      "ha_entity": "light.example_9",
+      "ha_room": "Living Room",
+      "room_action": false,
+      "score": 0.55,
+      "status": "unmatched"
+    },
+    {
+      "apple_accessory": "Accessory 10",
+      "apple_domain": "light",
+      "apple_room": "Bedroom",
+      "ha_entity": "light.example_10",
+      "ha_room": null,
+      "room_action": true,
+      "score": 0.7,
+      "status": "review"
+    }
+  ],
+  "summary": {
+    "apple_bridged_accessories": 23,
+    "ha_candidate_entities": 38,
+    "matches_by_status": {
+      "matched": 17,
+      "review": 4,
+      "unmatched": 2
+    },
+    "unmatched_ha_candidates": 17
+  }
+}

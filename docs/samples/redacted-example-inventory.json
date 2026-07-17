@@ -1,0 +1,403 @@
+{
+  "authorization": "Home access: authorized",
+  "generatedAt": "2026-06-23T00:00:00Z",
+  "homeCount": 1,
+  "homes": [
+    {
+      "accessories": [
+        {
+          "bridgedAccessoryCount": 0,
+          "bridgedAccessoryIds": [],
+          "category": "Other",
+          "id": "accessory-1",
+          "isBridged": true,
+          "isReachable": true,
+          "name": "Accessory 1",
+          "roomName": "Room 5",
+          "serviceCount": 2,
+          "services": [
+            {
+              "characteristicCount": 6,
+              "characteristics": [
+                {
+                  "description": "Serial Number",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000030-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Firmware Version",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000052-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Model",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000021-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Manufacturer",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000020-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Name",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000023-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Identify",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable"
+                  ],
+                  "type": "00000014-0000-1000-8000-0026BB765291"
+                }
+              ],
+              "id": "accessory-1-service-1",
+              "name": "Service 1",
+              "type": "0000003E-0000-1000-8000-0026BB765291"
+            },
+            {
+              "characteristicCount": 5,
+              "characteristics": [
+                {
+                  "description": "Power State",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable",
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "00000025-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Brightness",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable",
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "00000008-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Hue",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable",
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "00000013-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Saturation",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable",
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "0000002F-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Color Temperature",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable",
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "000000CE-0000-1000-8000-0026BB765291"
+                }
+              ],
+              "id": "accessory-1-service-2",
+              "name": "Service 2",
+              "type": "00000043-0000-1000-8000-0026BB765291"
+            }
+          ]
+        },
+        {
+          "bridgedAccessoryCount": 0,
+          "bridgedAccessoryIds": [],
+          "category": "Other",
+          "id": "accessory-2",
+          "isBridged": true,
+          "isReachable": true,
+          "name": "Accessory 2",
+          "roomName": "Room 6",
+          "serviceCount": 2,
+          "services": [
+            {
+              "characteristicCount": 6,
+              "characteristics": [
+                {
+                  "description": "Serial Number",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000030-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Firmware Version",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000052-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Manufacturer",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000020-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Model",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000021-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Identify",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable"
+                  ],
+                  "type": "00000014-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Name",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000023-0000-1000-8000-0026BB765291"
+                }
+              ],
+              "id": "accessory-2-service-1",
+              "name": "Service 1",
+              "type": "0000003E-0000-1000-8000-0026BB765291"
+            },
+            {
+              "characteristicCount": 3,
+              "characteristics": [
+                {
+                  "description": "Power State",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable",
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "00000025-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Brightness",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable",
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "00000008-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Color Temperature",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable",
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "000000CE-0000-1000-8000-0026BB765291"
+                }
+              ],
+              "id": "accessory-2-service-2",
+              "name": "Service 2",
+              "type": "00000043-0000-1000-8000-0026BB765291"
+            }
+          ]
+        },
+        {
+          "bridgedAccessoryCount": 0,
+          "bridgedAccessoryIds": [],
+          "category": "Other",
+          "id": "accessory-3",
+          "isBridged": true,
+          "isReachable": true,
+          "name": "Accessory 3",
+          "roomName": "Room 6",
+          "serviceCount": 3,
+          "services": [
+            {
+              "characteristicCount": 4,
+              "characteristics": [
+                {
+                  "description": "Target Position",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable",
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "0000007C-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Current Position",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "0000006D-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Position State",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "00000072-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Hold Position",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable"
+                  ],
+                  "type": "0000006F-0000-1000-8000-0026BB765291"
+                }
+              ],
+              "id": "accessory-3-service-1",
+              "name": "Service 1",
+              "type": "0000008C-0000-1000-8000-0026BB765291"
+            },
+            {
+              "characteristicCount": 3,
+              "characteristics": [
+                {
+                  "description": "Battery Level",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "00000068-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Status Low Battery",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "00000079-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Charging State",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable",
+                    "HMCharacteristicPropertySupportsEventNotification"
+                  ],
+                  "type": "0000008F-0000-1000-8000-0026BB765291"
+                }
+              ],
+              "id": "accessory-3-service-2",
+              "name": "Service 2",
+              "type": "00000096-0000-1000-8000-0026BB765291"
+            },
+            {
+              "characteristicCount": 6,
+              "characteristics": [
+                {
+                  "description": "Identify",
+                  "properties": [
+                    "HMCharacteristicPropertyWritable"
+                  ],
+                  "type": "00000014-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Serial Number",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000030-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Firmware Version",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000052-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Manufacturer",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000020-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Model",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000021-0000-1000-8000-0026BB765291"
+                },
+                {
+                  "description": "Name",
+                  "properties": [
+                    "HMCharacteristicPropertyReadable"
+                  ],
+                  "type": "00000023-0000-1000-8000-0026BB765291"
+                }
+              ],
+              "id": "accessory-3-service-3",
+              "name": "Service 3",
+              "type": "0000003E-0000-1000-8000-0026BB765291"
+            }
+          ]
+        }
+      ],
+      "accessoryCount": 24,
+      "id": "home-1",
+      "name": "Example Home",
+      "roomCount": 9,
+      "rooms": [
+        {
+          "id": "room-1",
+          "name": "Room 1"
+        },
+        {
+          "id": "room-2",
+          "name": "Room 2"
+        },
+        {
+          "id": "room-3",
+          "name": "Room 3"
+        },
+        {
+          "id": "room-4",
+          "name": "Room 4"
+        },
+        {
+          "id": "room-5",
+          "name": "Room 5"
+        },
+        {
+          "id": "room-6",
+          "name": "Room 6"
+        },
+        {
+          "id": "room-7",
+          "name": "Room 7"
+        },
+        {
+          "id": "room-8",
+          "name": "Room 8"
+        },
+        {
+          "id": "room-9",
+          "name": "Room 9"
+        }
+      ]
+    }
+  ],
+  "selectedHomeName": "Example Home"
+}

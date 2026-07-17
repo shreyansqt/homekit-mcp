@@ -1,0 +1,34 @@
+# Example only. Keep real household-specific names/IDs in local/homekit-ha-mapping.yaml.
+
+homekit_home: Example Home
+
+matching:
+  confidence_thresholds:
+    matched: 0.82
+    review: 0.62
+  domains:
+    - light
+    - cover
+
+mappings:
+  - ha_entity_id: light.bedroom_side_lamp_left
+    homekit_accessory_name: Bedroom Side Lamp Left
+    expected_homekit_room: Bedroom
+    desired_room_from_ha_area: true
+    match_confidence: explicit
+
+  - ha_entity_id: cover.living_room_shade
+    homekit_accessory_name: Roller Shade
+    expected_homekit_room: Living Room
+    desired_room_from_ha_area: true
+    match_confidence: explicit
+
+review_required:
+  - homekit_accessory_name: Hanging Lamp
+    reason: Duplicate accessory name appears in more than one room; room context or explicit mapping required.
+  - homekit_accessory_name: Floor Lamp
+    reason: HA grouped light may span multiple child entities; confirm the source-of-truth entity before applying room/name changes.
+
+ignored:
+  - homekit_accessory_name: Example Bridge
+    reason: Bridge accessory itself; match bridged children instead.
