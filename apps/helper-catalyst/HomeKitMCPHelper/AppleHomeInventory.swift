@@ -10,6 +10,13 @@ struct AppleHomeInventory: Codable {
         let accessoryCount: Int
         let rooms: [Room]
         let accessories: [Accessory]
+        let actionSets: [ActionSet]
+    }
+
+    struct ActionSet: Codable {
+        let id: String
+        let name: String
+        let actionCount: Int
     }
 
     struct Room: Codable {
@@ -110,6 +117,13 @@ struct AppleHomeInventory: Codable {
                                     }
                                 )
                             }
+                        )
+                    },
+                    actionSets: home.actionSets.map { actionSet in
+                        ActionSet(
+                            id: actionSet.uniqueIdentifier.uuidString,
+                            name: actionSet.name,
+                            actionCount: actionSet.actions.count
                         )
                     }
                 )

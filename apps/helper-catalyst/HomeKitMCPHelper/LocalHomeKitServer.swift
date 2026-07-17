@@ -81,7 +81,7 @@ enum LocalHTTPResponse {
 
         if firstLine.hasPrefix("GET / ") {
             let body = """
-            {"name":"HomeKit MCP Helper","tools":[{"name":"homekit_inventory","mode":"read_only"},{"name":"homekit_move_accessory","modes":["dry_run","plan","apply"],"default_mode":"plan"},{"name":"homekit_remove_accessory","modes":["dry_run","plan","apply"],"default_mode":"plan"}],"endpoints":{"health":"/health","inventory":"/inventory","mcp":"/mcp"}}
+            {"name":"HomeKit MCP Helper","tools":[{"name":"homekit_inventory","mode":"read_only"},{"name":"homekit_move_accessory","modes":["dry_run","plan","apply"],"default_mode":"plan"},{"name":"homekit_remove_accessory","modes":["dry_run","plan","apply"],"default_mode":"plan"},{"name":"homekit_create_scene","modes":["dry_run","plan","apply"],"default_mode":"plan"}],"endpoints":{"health":"/health","inventory":"/inventory","mcp":"/mcp"}}
             """
             return http(status: "200 OK", body: body + "\n")
         }
@@ -108,7 +108,7 @@ enum LocalHTTPResponse {
 
 enum MCPRequest {
     static func isMutationRequest(_ request: String) -> Bool {
-        ["homekit_move_accessory", "homekit_remove_accessory"].contains(toolName(from: request))
+        ["homekit_move_accessory", "homekit_remove_accessory", "homekit_create_scene"].contains(toolName(from: request))
     }
 
     static func toolName(from request: String) -> String? {
@@ -135,6 +135,20 @@ enum MCPRequest {
             return value
         }
         return nil
+    }
+
+    static func sceneActions(from request: String) -> [SceneAction] {
+        guard let object = object(from: request) else { return [] }
+        let rawActions = (object["actions"] as? [[String: Any]]) ?? ((object["arguments"] as? [String: Any])?["actions"] as? [[String: Any]]) ?? []
+        return rawActions.compactMap { raw in
+            guard let entityId = raw["entity_id"] as? String else { return nil }
+            let state = (raw["state"] as? String ?? "on").lowercased()
+            let brightness = raw["brightness"] as? Int
+            let xyColor = raw["xy_color"] as? [Double]
+            let colorTemperature = raw["color_temperature"] as? Int
+            let targetPosition = raw["target_position"] as? Int
+            return SceneAction(entityId: entityId, state: state, brightness: brightness, xyColor: xyColor, colorTemperature: colorTemperature, targetPosition: targetPosition)
+        }
     }
 
     static func boolArgument(_ name: String, from request: String) -> Bool {

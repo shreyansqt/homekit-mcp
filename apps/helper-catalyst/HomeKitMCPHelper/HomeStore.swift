@@ -89,6 +89,9 @@ final class HomeStore: NSObject, ObservableObject {
         if tool == "homekit_remove_accessory" {
             return await handleRemoveAccessory(request)
         }
+        if tool == "homekit_create_scene" {
+            return await handleCreateScene(request)
+        }
 
         guard tool == "homekit_move_accessory" else {
             return Self.jsonResponse(error: "unsupported_tool")
@@ -188,6 +191,159 @@ final class HomeStore: NSObject, ObservableObject {
         }
     }
 
+
+    private func handleCreateScene(_ request: String) async -> String {
+        guard let homeName = MCPRequest.homeName(from: request),
+              let sceneName = MCPRequest.stringArgument("name", from: request) else {
+            return Self.jsonResponse(error: "missing_required_arguments")
+        }
+        guard let home = homes.first(where: { $0.name.caseInsensitiveCompare(homeName) == .orderedSame }) else {
+            return Self.jsonResponse(error: "home_not_found", details: ["home": homeName])
+        }
+        let mode = MCPRequest.mutationMode(from: request)
+        let sceneActions = MCPRequest.sceneActions(from: request)
+        guard !sceneActions.isEmpty else {
+            return Self.jsonResponse(error: "missing_scene_actions", details: ["scene": sceneName])
+        }
+        let planned = plannedActionDescriptions(sceneActions, in: home)
+        guard mode == "apply" else {
+            return Self.jsonResponse(object: [
+                "status": mode == "dry_run" ? "dry_run" : "planned",
+                "tool": "homekit_create_scene",
+                "mode": mode,
+                "home": home.name,
+                "scene": sceneName,
+                "action_count": planned.count,
+                "actions": planned
+            ])
+        }
+        guard MCPRequest.boolArgument("confirm_apply", from: request) else {
+            return Self.jsonResponse(error: "apply_requires_confirm_apply")
+        }
+        do {
+            if let existing = home.actionSets.first(where: { $0.name.caseInsensitiveCompare(sceneName) == .orderedSame }) {
+                try await remove(actionSet: existing, from: home)
+            }
+            let actionSet = try await addActionSet(named: sceneName, to: home)
+            var added = 0
+            for sceneAction in sceneActions {
+                guard let accessory = findAccessory(in: home, identifier: sceneAction.entityId) else { continue }
+                let writeActions = makeWriteActions(for: sceneAction, accessory: accessory)
+                for writeAction in writeActions {
+                    try await add(action: writeAction, to: actionSet)
+                    added += 1
+                }
+            }
+            updateFromManager()
+            return Self.jsonResponse(object: [
+                "status": "ok",
+                "home": home.name,
+                "scene": sceneName,
+                "action_count": added
+            ])
+        } catch {
+            return Self.jsonResponse(error: "scene_create_failed", details: ["message": error.localizedDescription])
+        }
+    }
+
+    private func plannedActionDescriptions(_ sceneActions: [SceneAction], in home: HMHome) -> [[String: String]] {
+        sceneActions.map { sceneAction in
+            let found = findAccessory(in: home, identifier: sceneAction.entityId) != nil ? "true" : "false"
+            return [
+                "entity_id": sceneAction.entityId,
+                "state": sceneAction.state,
+                "found": found,
+                "brightness": sceneAction.brightness.map(String.init) ?? "",
+                "xy_color": sceneAction.xyColor.map { "\($0[0]),\($0[1])" } ?? "",
+                "target_position": sceneAction.targetPosition.map(String.init) ?? ""
+            ]
+        }
+    }
+
+    private func makeWriteActions(for sceneAction: SceneAction, accessory: HMAccessory) -> [HMCharacteristicWriteAction<NSCopying>] {
+        var result: [HMCharacteristicWriteAction<NSCopying>] = []
+        func writable(_ description: String) -> HMCharacteristic? {
+            accessory.services
+                .flatMap(\.characteristics)
+                .first { $0.localizedDescription == description && $0.properties.contains(HMCharacteristicPropertyWritable) }
+        }
+        func append(_ description: String, value: NSCopying) {
+            if let characteristic = writable(description) {
+                result.append(HMCharacteristicWriteAction(characteristic: characteristic, targetValue: value))
+            }
+        }
+        switch sceneAction.entityId.split(separator: ".").first.map(String.init) {
+        case "cover":
+            if sceneAction.state == "open" { append("Target Position", value: NSNumber(value: 100)) }
+            else if sceneAction.state == "closed" { append("Target Position", value: NSNumber(value: 0)) }
+            else if let target = sceneAction.targetPosition { append("Target Position", value: NSNumber(value: target)) }
+        default:
+            append("Power State", value: NSNumber(value: sceneAction.state == "on"))
+            guard sceneAction.state == "on" else { return result }
+            if let brightness = sceneAction.brightness {
+                append("Brightness", value: NSNumber(value: max(1, min(100, Int(round(Double(brightness) * 100.0 / 255.0))))))
+            }
+            if let xy = sceneAction.xyColor, xy.count == 2 {
+                let hs = Self.hueSaturationFromXY(x: xy[0], y: xy[1])
+                append("Hue", value: NSNumber(value: hs.hue))
+                append("Saturation", value: NSNumber(value: hs.saturation))
+            }
+            if let colorTemperature = sceneAction.colorTemperature {
+                append("Color Temperature", value: NSNumber(value: colorTemperature))
+            }
+        }
+        return result
+    }
+
+    private static func hueSaturationFromXY(x: Double, y: Double) -> (hue: Double, saturation: Double) {
+        guard y > 0 else { return (0, 0) }
+        let Y = 1.0
+        let X = (Y / y) * x
+        let Z = (Y / y) * (1.0 - x - y)
+        var r = X * 1.656492 - Y * 0.354851 - Z * 0.255038
+        var g = -X * 0.707196 + Y * 1.655397 + Z * 0.036152
+        var b = X * 0.051713 - Y * 0.121364 + Z * 1.011530
+        func gamma(_ c: Double) -> Double { c <= 0.0031308 ? 12.92 * c : (1.0 + 0.055) * pow(c, 1.0 / 2.4) - 0.055 }
+        r = max(0, gamma(r)); g = max(0, gamma(g)); b = max(0, gamma(b))
+        let maxv = max(r, g, b), minv = min(r, g, b)
+        let delta = maxv - minv
+        var hue = 0.0
+        if delta != 0 {
+            if maxv == r { hue = 60.0 * ((g - b) / delta).truncatingRemainder(dividingBy: 6.0) }
+            else if maxv == g { hue = 60.0 * (((b - r) / delta) + 2.0) }
+            else { hue = 60.0 * (((r - g) / delta) + 4.0) }
+        }
+        if hue < 0 { hue += 360.0 }
+        let saturation = maxv == 0 ? 0 : (delta / maxv) * 100.0
+        return (hue, saturation)
+    }
+
+    private func addActionSet(named name: String, to home: HMHome) async throws -> HMActionSet {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<HMActionSet, Error>) in
+            home.addActionSet(withName: name) { actionSet, error in
+                if let error { continuation.resume(throwing: error) }
+                else if let actionSet { continuation.resume(returning: actionSet) }
+                else { continuation.resume(throwing: NSError(domain: "HomeKitMCPHelper", code: 1, userInfo: [NSLocalizedDescriptionKey: "Action set creation returned nil"])) }
+            }
+        }
+    }
+
+    private func remove(actionSet: HMActionSet, from home: HMHome) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            home.removeActionSet(actionSet) { error in
+                if let error { continuation.resume(throwing: error) } else { continuation.resume() }
+            }
+        }
+    }
+
+    private func add(action: HMCharacteristicWriteAction<NSCopying>, to actionSet: HMActionSet) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            actionSet.addAction(action) { error in
+                if let error { continuation.resume(throwing: error) } else { continuation.resume() }
+            }
+        }
+    }
+
     private func findAccessory(in home: HMHome, identifier: String) -> HMAccessory? {
         home.accessories.first { accessory in
             accessory.uniqueIdentifier.uuidString.caseInsensitiveCompare(identifier) == .orderedSame
@@ -231,11 +387,15 @@ final class HomeStore: NSObject, ObservableObject {
     }
 
     private static func jsonResponse(error: String? = nil, details: [String: String] = [:]) -> String {
-        var object = details
+        var object: [String: Any] = details
         if let error {
             object["status"] = "error"
             object["error"] = error
         }
+        return jsonResponse(object: object)
+    }
+
+    private static func jsonResponse(object: [String: Any]) -> String {
         guard let data = try? JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys]),
               let text = String(data: data, encoding: .utf8) else {
             return "{\"status\":\"error\",\"error\":\"json_encoding_failed\"}"
@@ -284,6 +444,15 @@ final class HomeStore: NSObject, ObservableObject {
             authorizationIcon = "questionmark.circle"
         }
     }
+}
+
+struct SceneAction {
+    let entityId: String
+    let state: String
+    let brightness: Int?
+    let xyColor: [Double]?
+    let colorTemperature: Int?
+    let targetPosition: Int?
 }
 
 extension HomeStore: HMHomeManagerDelegate {
