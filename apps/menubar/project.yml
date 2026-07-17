@@ -34,3 +34,4 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: local.homekitmcp.menubar.tests
+        GENERATE_INFOPLIST_FILE: YES

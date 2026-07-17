@@ -47,7 +47,7 @@ final class MenuBarController: NSObject {
         guard let button = statusItem.button else { return }
         button.image = NSImage(systemSymbolName: "house.circle", accessibilityDescription: "HomeKit MCP Helper")
         button.imagePosition = .imageLeading
-        button.title = "HK MCP"
+        button.title = "HK"
         statusItem.menu = menu
     }
 
@@ -77,6 +77,7 @@ final class MenuBarController: NSObject {
 
     private func setCheckingState() {
         statusItem.button?.image = NSImage(systemSymbolName: "house.circle", accessibilityDescription: "Checking")
+        statusItem.button?.title = "HK"
         statusMenuItem.title = "Helper: checking…"
         inventoryMenuItem.title = "Inventory: loading…"
         detailMenuItem.attributedTitle = secondaryAttributedTitle("Querying http://127.0.0.1:8765")
@@ -97,6 +98,7 @@ final class MenuBarController: NSObject {
             systemSymbolName: snapshot.health.reachable ? "house.circle.fill" : "house.circle",
             accessibilityDescription: snapshot.health.reachable ? "HomeKit MCP Helper online" : "HomeKit MCP Helper offline"
         )
+        statusItem.button?.title = snapshot.health.reachable ? "HK ✓" : "HK !"
         statusMenuItem.title = snapshot.menuStatusText
         if let inventory = snapshot.inventory {
             inventoryMenuItem.title = inventory.displayText
