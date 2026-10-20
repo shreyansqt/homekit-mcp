@@ -3,6 +3,10 @@
 
 Runs on the Mac Mini. Reads HA scenes over `ssh ha-pi`, then upserts matching
 HomeKit action sets through the local HomeKit MCP Helper.
+
+Home Assistant allows two scenes to share a display name. Apple Home does not.
+The first scene keeps the Home Assistant name. A later scene with the same name
+gets a room prefix taken from its id (Guest Room Chill, Kitchen Dinner Time).
 """
 from __future__ import annotations
 
@@ -21,7 +25,7 @@ HELPER_URL = os.environ.get("HOMEKIT_MCP_URL", "http://127.0.0.1:8765")
 HOME_NAME = os.environ.get("HOMEKIT_HOME_NAME", "Köpenick Home")
 STATE_FILE = Path(os.environ.get("HA_HK_SCENE_SYNC_STATE", str(Path.home() / ".local/state/homekit-mcp/ha-scenes.sha256")))
 
-SUPPORTED_DOMAINS = {"light", "cover"}
+SUPPORTED_DOMAINS = {"light", "cover", "switch"}
 
 
 def run(cmd: list[str], timeout: int = 60) -> str:
@@ -32,24 +36,26 @@ def run(cmd: list[str], timeout: int = 60) -> str:
 
 
 def load_ha_scenes() -> list[dict[str, Any]]:
-    code = r'''
+    domains = ", ".join(repr(domain) for domain in sorted(SUPPORTED_DOMAINS))
+    code = f'''
 import yaml, json
 scenes = yaml.safe_load(open('/config/scenes.yaml')) or []
 out = []
+supported = {{{domains}}}
 for scene in scenes:
-    entities = scene.get('entities') or {}
+    entities = scene.get('entities') or {{}}
     actions = []
     unsupported = []
     for entity_id, attrs in entities.items():
         domain = entity_id.split('.', 1)[0]
-        if domain not in {'light', 'cover'}:
+        if domain not in supported:
             unsupported.append(entity_id)
             continue
-        attrs = attrs or {}
-        action = {
+        attrs = attrs or {{}}
+        action = {{
             'entity_id': entity_id,
             'state': str(attrs.get('state', 'on')).lower(),
-        }
+        }}
         if 'brightness' in attrs and attrs.get('brightness') is not None:
             action['brightness'] = int(attrs['brightness'])
         if 'xy_color' in attrs and attrs.get('xy_color') is not None:
@@ -64,15 +70,41 @@ for scene in scenes:
             elif attrs.get('current_position') is not None:
                 action['target_position'] = int(attrs['current_position'])
         actions.append(action)
-    out.append({
+    out.append({{
         'id': str(scene.get('id') or scene.get('name')),
         'name': scene.get('name'),
         'actions': actions,
         'unsupported': unsupported,
-    })
+    }})
 print(json.dumps(out, sort_keys=True))
 '''
     return json.loads(run(["ssh", "ha-pi", f"python3 -c {shlex.quote(code)}"], timeout=90))
+
+
+def assign_apple_names(scenes: list[dict[str, Any]]) -> None:
+    """Give each scene a unique Apple Home name. First copy keeps the HA name."""
+    used: set[str] = set()
+    for scene in scenes:
+        name = scene.get("name")
+        if not isinstance(name, str) or not name:
+            scene["apple_name"] = None
+            continue
+        apple = name
+        if apple in used:
+            sid = str(scene.get("id") or "")
+            if sid.startswith("guest_room_"):
+                apple = f"Guest Room {name}"
+            elif sid.startswith("kitchen_"):
+                apple = f"Kitchen {name}"
+            else:
+                apple = f"{name} ({sid})"
+            base = apple
+            n = 2
+            while apple in used:
+                apple = f"{base} {n}"
+                n += 1
+        used.add(apple)
+        scene["apple_name"] = apple
 
 
 def canonical_hash(scenes: list[dict[str, Any]]) -> str:
@@ -103,21 +135,30 @@ def sync(scenes: list[dict[str, Any]], dry_run: bool = False) -> list[str]:
         raise RuntimeError(f"Apple Home not found: {HOME_NAME}")
 
     for scene in scenes:
-        if not scene.get("name") or not scene.get("actions"):
+        apple_name = scene.get("apple_name") or scene.get("name")
+        if not apple_name or not scene.get("actions"):
             continue
         payload = {
             "tool": "homekit_create_scene",
             "home": HOME_NAME,
-            "name": scene["name"],
+            "name": apple_name,
             "mode": "dry_run" if dry_run else "apply",
             "confirm_apply": not dry_run,
             "actions": scene["actions"],
         }
         result = helper_post(payload)
         if result.get("status") == "error":
-            raise RuntimeError(f"{scene['name']}: {result}")
+            raise RuntimeError(f"{apple_name}: {result}")
         count = result.get("action_count", len(scene["actions"]))
-        line = f"{scene['name']}: {'planned' if dry_run else 'synced'} ({count} HomeKit actions)"
+        label = apple_name if apple_name == scene.get("name") else f"{apple_name} (HA name {scene.get('name')})"
+        line = f"{label}: {'planned' if dry_run else 'synced'} ({count} HomeKit actions)"
+        missing = [
+            item.get("entity_id", "")
+            for item in result.get("actions") or []
+            if item.get("found") == "false"
+        ]
+        if missing:
+            line += f"; not on the bridge: {', '.join(missing)}"
         if scene.get("unsupported"):
             line += f"; skipped unsupported: {', '.join(scene['unsupported'])}"
         messages.append(line)
@@ -131,6 +172,7 @@ def main() -> int:
     args = ap.parse_args()
 
     scenes = load_ha_scenes()
+    assign_apple_names(scenes)
     digest = canonical_hash(scenes)
     old = STATE_FILE.read_text().strip() if STATE_FILE.exists() else ""
     if not args.force and old == digest:
